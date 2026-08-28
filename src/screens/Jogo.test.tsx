@@ -139,13 +139,14 @@ describe("Jogo", () => {
   // setTimeout antigo ainda dispara mais tarde e chama responder(-1,
   // false, true) de novo. Uma guarda baseada nesse state fica presa no
   // closure antigo, sempre lê bloqueado=false e deixa a segunda resposta
-  // passar: um tempo extra é empurrado para tempoRespostasMs. Uma guarda
-  // baseada em ref (mutada de forma síncrona, e por isso visível a
-  // qualquer closure que leia o mesmo objeto ref) bloqueia corretamente.
+  // passar: uma segunda entrada é empurrada para tempoRespostasMs e um
+  // segundo onFim é agendado (e disparado, após seu próprio atraso de
+  // feedback).
   //
   // Verificado manualmente: trocando a guarda de `responder` para
   // `if (bloqueado) return;` (o state, em vez do ref) este teste falha —
-  // `tempoRespostasMs` fica com 2 entradas em vez de 1.
+  // onFim acaba sendo chamado 2 vezes, a segunda com tempoRespostasMs de
+  // comprimento 2 ([0, 10000]).
   it("não processa duas vezes a resposta de uma partida de pergunta única quando o cronômetro dispara após o jogador já ter respondido", () => {
     const onFim = vi.fn();
     const umaPergunta = [itemDeTeste("Pergunta única", 0)];
@@ -169,13 +170,56 @@ describe("Jogo", () => {
 
     expect(onFim).toHaveBeenCalledTimes(1);
 
-    // Agora deixa o cronômetro estourar (mais 9900ms, totalizando 10s
-    // desde que a pergunta foi renderizada). Com a guarda correta, nada
-    // deve acontecer: a guarda já devia estar travada.
-    act(() => vi.advanceTimersByTime(9900));
+    // Deixa o cronômetro estourar (mais 9900ms, totalizando 10s desde que
+    // a pergunta foi renderizada) e, em seguida, avança mais 200ms — além
+    // do próprio msFeedbackErrado do segundo `responder(-1, false, true)`
+    // que a guarda quebrada deixaria passar — para dar tempo do segundo
+    // onFim (se a guarda estiver quebrada) também disparar. Com a guarda
+    // correta, nada disso deve acontecer: a guarda já devia estar travada
+    // antes do cronômetro estourar.
+    act(() => vi.advanceTimersByTime(9900 + 200));
 
     expect(onFim).toHaveBeenCalledTimes(1);
     const resultado = onFim.mock.calls[0][0];
     expect(resultado.tempoRespostasMs).toHaveLength(1);
+  });
+
+  // ---------------------------------------------------------------------
+  // Limpeza do timer de avanço/fim pós-feedback (equivalente a `avancar`
+  // no HTML original, cancelado por `limparTemporizadores()` quando
+  // `irParaAbertura()` abandona a rodada). Se <Jogo> desmontar enquanto o
+  // atraso de feedback ainda está em curso — por exemplo, por causa do
+  // timeout ocioso de 45s que a Task 11 porta para o App — esse setTimeout
+  // não pode sobreviver ao desmonte: se sobreviver, ele chama onFim depois
+  // que o app já navegou para outra tela, uma transição fantasma.
+  //
+  // Verificado manualmente: removendo a limpeza do useEffect de
+  // desmontagem em Jogo.tsx (deixando o setTimeout de `responder`
+  // solto, sem ref/clearTimeout) este teste falha — onFim é chamado depois
+  // do unmount.
+  it("cancela o timer de avanço pós-feedback ao desmontar, sem chamar onFim depois", () => {
+    const onFim = vi.fn();
+    // Pergunta única: o timer de avanço agendado por `responder` teria como
+    // alvo o próprio `onFim` (por ser a última pergunta da partida), não um
+    // `setIndice` — exercitando exatamente o caminho que a limpeza precisa
+    // impedir de disparar após o desmonte.
+    const umaPergunta = [itemDeTeste("Pergunta única", 0)];
+    const { unmount } = render(
+      <Jogo
+        itens={umaPergunta}
+        segundosPorPergunta={0}
+        msFeedbackCerto={100}
+        msFeedbackErrado={100}
+        mostrarFato
+        onFim={onFim}
+      />
+    );
+
+    fireEvent.click(screen.getByText("Alternativa 0")); // certa, dispara o timer de avanço (-> onFim)
+    unmount(); // desmonta antes dos 100ms de msFeedbackCerto decorrerem
+
+    act(() => vi.advanceTimersByTime(10000));
+
+    expect(onFim).not.toHaveBeenCalled();
   });
 });

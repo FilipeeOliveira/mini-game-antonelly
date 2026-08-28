@@ -45,6 +45,15 @@ export function Jogo({
   // congelado é `false`). Um ref é lido de forma síncrona e sempre
   // reflete o valor atual, então bloqueia corretamente.
   const bloqueadoRef = useRef(false);
+  // Timer do avanço/fim pós-feedback (equivalente a `avancar` no HTML
+  // original). Não é limpo automaticamente por nenhum outro efeito: se o
+  // componente desmontar durante o atraso de feedback (por exemplo, o
+  // timeout ocioso de 45s da Task 11 abandonando a rodada), esse timeout
+  // dispara depois e chama onFim numa tela da qual o app já saiu. Guardado
+  // em ref e limpo tanto no cleanup de desmonte quanto no próprio início de
+  // `responder`, para não ficar órfão se uma pergunta nova renderizar antes
+  // dele disparar.
+  const avancarRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const item = itens[indice];
   const idxCerta = item.alternativas.findIndex((a) => a.certa);
@@ -64,6 +73,12 @@ export function Jogo({
     return () => clearTimeout(cronometro);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [indice]);
+
+  useEffect(() => {
+    return () => {
+      if (avancarRef.current) clearTimeout(avancarRef.current);
+    };
+  }, []);
 
   function responder(idxEscolhido: number, certa: boolean, tempoEsgotado = false) {
     if (bloqueadoRef.current) return;
@@ -86,8 +101,10 @@ export function Jogo({
 
     onProgresso?.(indice + 1);
 
+    if (avancarRef.current) clearTimeout(avancarRef.current);
     const espera = certa ? msFeedbackCerto : msFeedbackErrado;
-    setTimeout(() => {
+    avancarRef.current = setTimeout(() => {
+      avancarRef.current = null;
       if (indice + 1 >= itens.length) {
         onFim({
           acertos: acertosRef.current,
