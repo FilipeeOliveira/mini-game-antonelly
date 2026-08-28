@@ -68,6 +68,25 @@ export function App() {
     setTela("abertura");
   }
 
+  // som de toque nos três botões grandes de navegação (fiel ao HTML
+  // original: btn-comecar, btn-denovo e btn-sair chamam somToque() antes de
+  // navegar). Envolvido aqui, e não como prop nova em Abertura/Resultado,
+  // porque App já é quem possui `tocar` e os callbacks de navegação.
+  function comecarComSom() {
+    tocar("toque");
+    iniciarPartida();
+  }
+
+  function jogarDeNovoComSom() {
+    tocar("toque");
+    iniciarPartida();
+  }
+
+  function proximoJogadorComSom() {
+    tocar("toque");
+    voltarAbertura();
+  }
+
   // comportamentos de quiosque: bloquear menu de contexto, arrastar e gestos
   useEffect(() => {
     const prevenir = (e: Event) => e.preventDefault();
@@ -150,7 +169,7 @@ export function App() {
       <RioNivel nivelPercent={nivelPercent} marcas={marcasRegua} />
 
       {tela === "abertura" && (
-        <Abertura onComecar={iniciarPartida} onAbrirPainel={() => setPainelAberto(true)} />
+        <Abertura onComecar={comecarComSom} onAbrirPainel={() => setPainelAberto(true)} />
       )}
 
       {tela === "jogo" && itens.length > 0 && (
@@ -173,8 +192,8 @@ export function App() {
           total={resultado.total}
           mensagem={mensagemResultado(resultado.percentual)}
           segundosAutoVolta={CONFIG.segundosOciosoResultado}
-          onJogarDeNovo={iniciarPartida}
-          onProximoJogador={voltarAbertura}
+          onJogarDeNovo={jogarDeNovoComSom}
+          onProximoJogador={proximoJogadorComSom}
         />
       )}
 
