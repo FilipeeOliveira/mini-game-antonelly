@@ -29,7 +29,7 @@ export function sortearPerguntas(
       certa: idx === q.correta,
     }));
     if (embaralharAlternativas) alternativas = embaralhar(alternativas);
-    return { pergunta: q.pergunta, fato: q.fato, alternativas };
+    return { pergunta: q.pergunta, alternativas };
   });
 
   return { itens, sacolaRestante };
@@ -44,6 +44,7 @@ export function mensagemResultado(percentual: number): string {
   if (percentual >= 80) return "Quase lá em cima: só faltou um palmo de água";
   if (percentual >= 60) return "Boa navegação — o canal está aberto";
   if (percentual >= 40) return "Águas médias: dá para melhorar na próxima";
-  if (percentual >= 20) return "Vazante. Passe no estande e a gente te conta o resto";
-  return "Seca total — mas todo mundo começa por aqui";
+  if (percentual >= 25) return "Vazante. Passe no estande e a gente te conta o resto";
+  if (percentual >= 10) return "Águas rasas — mas todo mundo começa por aqui";
+  return "Seca total. Bora conversar no estande?";
 }

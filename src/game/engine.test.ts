@@ -19,9 +19,8 @@ describe("embaralhar", () => {
 function bancoFalso(tamanho: number): Pergunta[] {
   return Array.from({ length: tamanho }, (_, i) => ({
     pergunta: `Pergunta ${i}`,
-    alternativas: ["A", "B", "C", "D"] as [string, string, string, string],
+    alternativas: ["A", "B", "C"] as [string, string, string],
     correta: 0 as const,
-    fato: `Fato ${i}`,
   }));
 }
 
@@ -40,7 +39,7 @@ describe("sortearPerguntas", () => {
 
   it("marca certa=true só na alternativa do índice correto", () => {
     const banco: Pergunta[] = [
-      { pergunta: "P1", alternativas: ["a", "b", "c", "d"], correta: 2, fato: "f" },
+      { pergunta: "P1", alternativas: ["a", "b", "c"], correta: 2 },
     ];
     const { itens } = sortearPerguntas(banco, [], 1, false);
     const certas = itens[0].alternativas.filter((a) => a.certa);
@@ -68,8 +67,9 @@ describe("mensagemResultado", () => {
     [80, "Quase lá em cima: só faltou um palmo de água"],
     [60, "Boa navegação — o canal está aberto"],
     [40, "Águas médias: dá para melhorar na próxima"],
-    [20, "Vazante. Passe no estande e a gente te conta o resto"],
-    [0, "Seca total — mas todo mundo começa por aqui"],
+    [33, "Vazante. Passe no estande e a gente te conta o resto"],
+    [17, "Águas rasas — mas todo mundo começa por aqui"],
+    [0, "Seca total. Bora conversar no estande?"],
   ])("percentual=%i -> mensagem certa", (pct, esperado) => {
     expect(mensagemResultado(pct)).toBe(esperado);
   });

@@ -4,10 +4,9 @@ import { Jogo } from "./Jogo";
 import type { ItemPartida } from "@/game/types";
 
 function itemDeTeste(pergunta: string, certaIdx: number): ItemPartida {
-  const textos = ["Alternativa 0", "Alternativa 1", "Alternativa 2", "Alternativa 3"];
+  const textos = ["Alternativa 0", "Alternativa 1", "Alternativa 2"];
   return {
     pergunta,
-    fato: `Fato sobre ${pergunta}`,
     alternativas: textos.map((texto, i) => ({ texto, certa: i === certaIdx })),
   };
 }
@@ -18,19 +17,18 @@ describe("Jogo", () => {
 
   const itens = [itemDeTeste("Pergunta 1", 0), itemDeTeste("Pergunta 2", 1)];
 
-  it("renderiza a primeira pergunta e suas 4 alternativas", () => {
+  it("renderiza a primeira pergunta e suas 3 alternativas", () => {
     render(
       <Jogo
         itens={itens}
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
-        mostrarFato
         onFim={() => {}}
       />
     );
     expect(screen.getByText("Pergunta 1")).toBeInTheDocument();
-    expect(screen.getAllByRole("button")).toHaveLength(4);
+    expect(screen.getAllByRole("button")).toHaveLength(3);
   });
 
   it("responder certo mostra 'Isso mesmo!' e desabilita as alternativas", () => {
@@ -40,7 +38,6 @@ describe("Jogo", () => {
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
-        mostrarFato
         onFim={() => {}}
       />
     );
@@ -56,7 +53,6 @@ describe("Jogo", () => {
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
-        mostrarFato
         onFim={() => {}}
       />
     );
@@ -72,7 +68,6 @@ describe("Jogo", () => {
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
-        mostrarFato
         onFim={() => {}}
       />
     );
@@ -89,7 +84,6 @@ describe("Jogo", () => {
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
-        mostrarFato
         onFim={onFim}
       />
     );
@@ -114,7 +108,6 @@ describe("Jogo", () => {
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
-        mostrarFato
         onProgresso={onProgresso}
         onFim={() => {}}
       />
@@ -156,7 +149,6 @@ describe("Jogo", () => {
         segundosPorPergunta={10}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
-        mostrarFato
         onFim={onFim}
       />
     );
@@ -210,7 +202,6 @@ describe("Jogo", () => {
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
-        mostrarFato
         onFim={onFim}
       />
     );
@@ -239,7 +230,6 @@ describe("Jogo", () => {
           segundosPorPergunta={25}
           msFeedbackCerto={100}
           msFeedbackErrado={100}
-          mostrarFato
           onFim={() => {}}
         />
       );
@@ -254,7 +244,6 @@ describe("Jogo", () => {
           segundosPorPergunta={10}
           msFeedbackCerto={100}
           msFeedbackErrado={100}
-          mostrarFato
           onFim={() => {}}
         />
       );
@@ -273,7 +262,6 @@ describe("Jogo", () => {
           segundosPorPergunta={10}
           msFeedbackCerto={100}
           msFeedbackErrado={100}
-          mostrarFato
           onFim={() => {}}
         />
       );
@@ -296,7 +284,6 @@ describe("Jogo", () => {
           segundosPorPergunta={10}
           msFeedbackCerto={500}
           msFeedbackErrado={500}
-          mostrarFato
           onFim={() => {}}
         />
       );

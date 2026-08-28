@@ -10,14 +10,13 @@ import { Jogo } from "@/screens/Jogo";
 import { Resultado } from "@/screens/Resultado";
 
 const CONFIG = {
-  perguntasPorPartida: 5,
+  perguntasPorPartida: 6,
   segundosPorPergunta: 25,
   msFeedbackCerto: 2000,
   msFeedbackErrado: 2900,
   segundosOciosoJogo: 45,
   segundosOciosoResultado: 25,
   embaralharAlternativas: true,
-  mostrarFato: true,
 };
 
 type Tela = "abertura" | "jogo" | "resultado";
@@ -195,7 +194,6 @@ export function App() {
           segundosPorPergunta={CONFIG.segundosPorPergunta}
           msFeedbackCerto={CONFIG.msFeedbackCerto}
           msFeedbackErrado={CONFIG.msFeedbackErrado}
-          mostrarFato={CONFIG.mostrarFato}
           onTocar={tocar}
           onProgresso={setIndiceAtual}
           onFim={finalizarPartida}

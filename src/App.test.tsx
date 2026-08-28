@@ -2,6 +2,33 @@ import { render, screen, fireEvent, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { App } from "./App";
 import { sons } from "@/game/audio";
+import { BANCO_PERGUNTAS } from "@/data/perguntas";
+
+// As perguntas reais têm a resposta certa em posições diferentes (A, B ou C),
+// então não dá para clicar sempre no primeiro botão. Este helper lê a pergunta
+// que está na tela, encontra-a no banco e clica na alternativa cujo texto é o
+// gabarito — independente da ordem em que ela foi sorteada.
+function responderCorretamente() {
+  const textoPergunta = document.querySelector(".pergunta")?.textContent ?? "";
+  const noBanco = BANCO_PERGUNTAS.find((p) => p.pergunta === textoPergunta);
+  if (!noBanco) throw new Error(`pergunta fora do banco: ${textoPergunta}`);
+  const textoCerto = noBanco.alternativas[noBanco.correta];
+  const botao = screen
+    .getAllByRole("button")
+    .find((b) => b.className.includes("alt") && (b.textContent ?? "").endsWith(textoCerto));
+  if (!botao) throw new Error(`alternativa correta não está na tela: ${textoCerto}`);
+  act(() => {
+    fireEvent.click(botao);
+  });
+  act(() => {
+    vi.advanceTimersByTime(2000);
+  });
+}
+
+// Uma partida tem CONFIG.perguntasPorPartida = 6 perguntas.
+function jogarPartidaInteiraAcertandoTudo() {
+  for (let i = 0; i < 6; i++) responderCorretamente();
+}
 
 describe("App — partida completa", () => {
   beforeEach(() => {
@@ -23,34 +50,16 @@ describe("App — partida completa", () => {
     fireEvent.click(screen.getByRole("button", { name: /toque para começar/i }));
     expect(screen.getByText("1")).toBeInTheDocument();
 
-    // com o shuffle virando identidade, a alternativa correta de toda
-    // pergunta do banco cai sempre no índice 0 (ver Task 2: todo `correta: 0`)
-    for (let i = 0; i < 5; i++) {
-      const botoes = screen.getAllByRole("button").filter((b) => b.className.includes("alt"));
-      act(() => {
-        fireEvent.click(botoes[0]);
-      });
-      act(() => {
-        vi.advanceTimersByTime(2000);
-      });
-    }
+    jogarPartidaInteiraAcertandoTudo();
 
     expect(screen.getByText("100")).toBeInTheDocument();
-    expect(screen.getByText("5 de 5 perguntas certas")).toBeInTheDocument();
+    expect(screen.getByText("6 de 6 perguntas certas")).toBeInTheDocument();
   });
 
   it("'Jogar de novo' no resultado inicia uma nova partida", () => {
     render(<App />);
     fireEvent.click(screen.getByRole("button", { name: /toque para começar/i }));
-    for (let i = 0; i < 5; i++) {
-      const botoes = screen.getAllByRole("button").filter((b) => b.className.includes("alt"));
-      act(() => {
-        fireEvent.click(botoes[0]);
-      });
-      act(() => {
-        vi.advanceTimersByTime(2000);
-      });
-    }
+    jogarPartidaInteiraAcertandoTudo();
     fireEvent.click(screen.getByRole("button", { name: /jogar de novo/i }));
     expect(screen.getByText("1")).toBeInTheDocument();
   });
@@ -106,15 +115,7 @@ describe("App — som de toque nos botões grandes de navegação", () => {
     render(<App />);
 
     fireEvent.click(screen.getByRole("button", { name: /toque para começar/i }));
-    for (let i = 0; i < 5; i++) {
-      const botoes = screen.getAllByRole("button").filter((b) => b.className.includes("alt"));
-      act(() => {
-        fireEvent.click(botoes[0]);
-      });
-      act(() => {
-        vi.advanceTimersByTime(2000);
-      });
-    }
+    jogarPartidaInteiraAcertandoTudo();
     expect(screen.getByText("100")).toBeInTheDocument();
 
     // zera as chamadas acumuladas até aqui (começar a partida e responder

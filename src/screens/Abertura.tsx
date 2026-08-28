@@ -42,7 +42,7 @@ export function Abertura({ onComecar, onAbrirPainel }: AberturaProps) {
         <em>do Rio</em>
       </h1>
       <p className="chamada">
-        Cinco perguntas sobre o rio, o porto e a obra. <b>Quanto você sabe?</b>
+        Seis perguntas sobre o rio, o porto e a obra. <b>Quanto você sabe?</b>
       </p>
       <button className="botao-gigante" type="button" onClick={onComecar}>
         Toque para começar

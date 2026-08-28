@@ -1,8 +1,7 @@
 export type Pergunta = {
   pergunta: string;
-  alternativas: [string, string, string, string];
-  correta: 0 | 1 | 2 | 3;
-  fato: string;
+  alternativas: [string, string, string];
+  correta: 0 | 1 | 2;
 };
 
 export type Alternativa = {
@@ -12,7 +11,6 @@ export type Alternativa = {
 
 export type ItemPartida = {
   pergunta: string;
-  fato: string;
   alternativas: Alternativa[];
 };
 

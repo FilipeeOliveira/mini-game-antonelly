@@ -11,8 +11,8 @@ describe("Resultado", () => {
     return render(
       <Resultado
         percentual={80}
-        acertos={4}
-        total={5}
+        acertos={5}
+        total={6}
         mensagem="Quase lá em cima: só faltou um palmo de água"
         segundosAutoVolta={25}
         onJogarDeNovo={() => {}}
@@ -27,7 +27,7 @@ describe("Resultado", () => {
     montar();
     expect(screen.getByText("80")).toBeInTheDocument();
     expect(screen.getByText("Quase lá em cima: só faltou um palmo de água")).toBeInTheDocument();
-    expect(screen.getByText("4 de 5 perguntas certas")).toBeInTheDocument();
+    expect(screen.getByText("5 de 6 perguntas certas")).toBeInTheDocument();
   });
 
   it("chama onJogarDeNovo ao clicar em 'Jogar de novo'", () => {

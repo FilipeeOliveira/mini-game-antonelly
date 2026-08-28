@@ -6,26 +6,29 @@ describe("BANCO_PERGUNTAS", () => {
     expect(BANCO_PERGUNTAS).toHaveLength(30);
   });
 
-  it("cada pergunta tem exatamente 4 alternativas", () => {
+  it("cada pergunta tem exatamente 3 alternativas", () => {
     for (const p of BANCO_PERGUNTAS) {
-      expect(p.alternativas).toHaveLength(4);
+      expect(p.alternativas).toHaveLength(3);
     }
   });
 
-  it("cada pergunta tem um índice de resposta correta válido (0-3)", () => {
+  it("cada pergunta tem um índice de resposta correta válido (0-2)", () => {
     for (const p of BANCO_PERGUNTAS) {
-      expect([0, 1, 2, 3]).toContain(p.correta);
+      expect([0, 1, 2]).toContain(p.correta);
     }
   });
 
-  it("cada pergunta tem um fato não vazio", () => {
-    for (const p of BANCO_PERGUNTAS) {
-      expect(p.fato.length).toBeGreaterThan(0);
-    }
-  });
 
   it("não há perguntas com texto duplicado", () => {
     const textos = BANCO_PERGUNTAS.map((p) => p.pergunta);
     expect(new Set(textos).size).toBe(textos.length);
+  });
+  // Gabarito oficial fornecido pela Antonelly, na ordem das 30 perguntas.
+  // Trava o banco: reordenar alternativas sem corrigir `correta` quebra aqui.
+  it("o índice de resposta correta bate com o gabarito oficial", () => {
+    const GABARITO = [
+      1, 0, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 2, 0, 1, 1, 1, 0, 0, 0, 1, 0, 1, 1, 0, 2, 1, 0, 2, 2,
+    ];
+    expect(BANCO_PERGUNTAS.map((p) => p.correta)).toEqual(GABARITO);
   });
 });

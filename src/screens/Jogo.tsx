@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ItemPartida, ResultadoPartida } from "@/game/types";
 import { calcularPercentual } from "@/game/engine";
 
-const LETRAS = ["A", "B", "C", "D"];
+const LETRAS = ["A", "B", "C"];
 // Últimos N segundos da pergunta em que a barra de tempo vira vermelha
 // (.tempo__barra--curta), fiel ao `iniciarCronometro` do original.
 const SEGUNDOS_BARRA_CURTA = 6;
@@ -12,7 +12,6 @@ type JogoProps = {
   segundosPorPergunta: number;
   msFeedbackCerto: number;
   msFeedbackErrado: number;
-  mostrarFato: boolean;
   onTocar?: (som: "toque" | "certo" | "errado") => void;
   onProgresso?: (indiceAtual: number) => void;
   onFim: (resultado: ResultadoPartida) => void;
@@ -23,7 +22,6 @@ export function Jogo({
   segundosPorPergunta,
   msFeedbackCerto,
   msFeedbackErrado,
-  mostrarFato,
   onTocar,
   onProgresso,
   onFim,
@@ -212,7 +210,6 @@ export function Jogo({
                 : "Não foi essa"
               : ""}
         </p>
-        <p className="veredito__fato">{veredito && mostrarFato ? item.fato : ""}</p>
       </div>
     </section>
   );
