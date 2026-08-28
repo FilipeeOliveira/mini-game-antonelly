@@ -1,29 +1,10 @@
 let contextoAudio: AudioContext | null = null;
-let classeAudioContextAtual: typeof AudioContext | null = null;
-
-function criarContextoAudio(Classe: typeof AudioContext): AudioContext {
-  try {
-    return new Classe();
-  } catch {
-    // Alguns mocks de teste (ex.: vi.fn com implementação arrow) não podem ser
-    // chamados com `new`; nesses casos a chamada direta ainda produz o objeto
-    // esperado. Em navegadores reais o `new Classe()` acima nunca lança.
-    return (Classe as unknown as () => AudioContext)();
-  }
-}
 
 function bip(freqs: number[], duracao = 0.12, tipo: OscillatorType = "sine", volume = 0.16) {
   try {
     const AudioContextClasse =
       window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-    // Reaproveita o contexto entre chamadas (evita esbarrar no limite de
-    // AudioContexts do navegador). Só recria se o construtor mudou — o que só
-    // acontece em testes, que trocam o mock a cada `beforeEach`; num navegador
-    // real `window.AudioContext` nunca muda durante a sessão.
-    if (!contextoAudio || classeAudioContextAtual !== AudioContextClasse) {
-      contextoAudio = criarContextoAudio(AudioContextClasse);
-      classeAudioContextAtual = AudioContextClasse;
-    }
+    contextoAudio = contextoAudio ?? new AudioContextClasse();
     if (contextoAudio.state === "suspended") contextoAudio.resume();
 
     freqs.forEach((freq, i) => {
