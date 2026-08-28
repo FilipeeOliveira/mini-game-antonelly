@@ -38,4 +38,15 @@ describe("Abertura", () => {
     vi.advanceTimersByTime(2000);
     expect(onAbrirPainel).not.toHaveBeenCalled();
   });
+
+  it("não abre o painel se a tela for desmontada antes de 2s (segundo dedo navegou)", () => {
+    const onAbrirPainel = vi.fn();
+    const { container, unmount } = render(<Abertura onComecar={() => {}} onAbrirPainel={onAbrirPainel} />);
+    const marca = container.querySelector("[data-marca]") as HTMLElement;
+    fireEvent.pointerDown(marca);
+    vi.advanceTimersByTime(1000);
+    unmount();
+    vi.advanceTimersByTime(2000);
+    expect(onAbrirPainel).not.toHaveBeenCalled();
+  });
 });

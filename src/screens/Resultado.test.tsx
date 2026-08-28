@@ -49,4 +49,10 @@ describe("Resultado", () => {
     vi.advanceTimersByTime(3000);
     expect(onProximoJogador).toHaveBeenCalledTimes(1);
   });
+
+  it("para o intervalo de contagem regressiva ao chegar em 0, sem continuar disparando", () => {
+    montar({ segundosAutoVolta: 2 });
+    vi.advanceTimersByTime(2000);
+    expect(vi.getTimerCount()).toBe(0);
+  });
 });

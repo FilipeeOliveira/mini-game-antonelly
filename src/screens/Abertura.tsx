@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
 
 type AberturaProps = {
   onComecar: () => void;
@@ -14,6 +14,8 @@ export function Abertura({ onComecar, onAbrirPainel }: AberturaProps) {
   function cancelarPressao() {
     if (pressaoRef.current) clearTimeout(pressaoRef.current);
   }
+
+  useEffect(() => () => cancelarPressao(), []);
 
   return (
     <section className="tela tela--ativa abertura">

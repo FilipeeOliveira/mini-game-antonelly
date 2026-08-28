@@ -28,8 +28,13 @@ export function Resultado({
       onProximoJogador();
     }, segundosAutoVolta * 1000);
 
+    let restanteAtual = segundosAutoVolta;
     const intervalo = setInterval(() => {
-      setRestante((r) => (r <= 1 ? 0 : r - 1));
+      restanteAtual = restanteAtual <= 1 ? 0 : restanteAtual - 1;
+      setRestante(restanteAtual);
+      if (restanteAtual <= 0) {
+        clearInterval(intervalo);
+      }
     }, 1000);
 
     return () => {
