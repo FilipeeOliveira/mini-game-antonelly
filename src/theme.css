@@ -198,6 +198,17 @@ body {
   width: auto;
 }
 
+.contador {
+  font-family: var(--dado);
+  font-size: clamp(13px, 1.9vmin, 19px);
+  letter-spacing: 0.1em;
+  color: var(--areia-dim);
+}
+.contador b {
+  color: var(--areia);
+  font-weight: 700;
+}
+
 .tempo {
   height: 5px;
   margin-top: 14px;
