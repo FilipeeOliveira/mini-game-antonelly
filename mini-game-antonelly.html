@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Desafio do Rio — Antonelly Construções</title>
+
+<!--
+  ATENÇÃO PARA O TOTEM: as fontes abaixo vêm do Google Fonts.
+  Se a feira não tiver internet confiável, baixe os .woff2 e troque por @font-face local.
+  Sem elas o jogo continua funcionando com a fonte de sistema.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   PALETA — Encontro das Águas
+   negro/água   = Rio Negro         solimões = sedimento do Solimões
+   ============================================================ */
+:root{
+  --negro:      #08151E;
+  --negro-2:    #0E2231;
+  --agua:       #123B52;
+  --agua-2:     #0D2B3D;
+  --solimoes:   #E0A94B;
+  --solimoes-2: #B87A28;
+  --areia:      #F4EBDA;
+  --areia-dim:  rgba(244,235,218,.58);
+  --verde:      #2FA84F;
+  --vermelho:   #E04A31;
+
+  /* verde da marca Antonelly — extraído do logo oficial, usado nos pontos de ação/marca */
+  --marca:      #2FA84F;
+  --marca-2:    #268F42;
+  --marca-rgb:  47,168,79;
+  --marca-texto: #0B2A12;
+
+  --raio: 14px;
+  --nivel: 10%;
+
+  --display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+  --dado: 'Space Mono', ui-monospace, 'Courier New', monospace;
+}
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+html,body{
+  height:100%;
+  overflow:hidden;
+  overscroll-behavior:none;
+  background:var(--negro);
+  color:var(--areia);
+  font-family:var(--display);
+  -webkit-font-smoothing:antialiased;
+  -webkit-tap-highlight-color:transparent;
+  user-select:none;
+  -webkit-user-select:none;
+  touch-action:manipulation;
+}
+
+body{
+  background:
+    radial-gradient(120% 80% at 50% -10%, var(--negro-2) 0%, var(--negro) 62%);
+}
+
+/* ---------- O RIO: elemento-assinatura ----------
+   O nível da água sobe conforme a partida avança e, no final,
+   para na altura da nota — como a régua de cota do porto.      */
+.rio{
+  position:fixed; left:0; right:0; bottom:0;
+  height:var(--nivel);
+  z-index:0;
+  pointer-events:none;
+  transition:height 1000ms cubic-bezier(.25,.9,.25,1);
+}
+.rio__corpo{
+  position:absolute; inset:0;
+  background:linear-gradient(180deg, var(--agua) 0%, var(--agua-2) 100%);
+}
+.rio__onda{
+  position:absolute; left:0; right:0; top:-16px; height:22px;
+  background-repeat:repeat-x;
+  background-size:260px 22px;
+}
+.rio__onda--a{
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 22' preserveAspectRatio='none'%3E%3Cpath d='M0 12 C 15 2, 25 22, 40 12 S 65 2, 80 12 S 105 22, 120 12 V22 H0 Z' fill='%23123B52'/%3E%3C/svg%3E");
+  animation:correnteza 13s linear infinite;
+}
+.rio__onda--b{
+  top:-9px; opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 22' preserveAspectRatio='none'%3E%3Cpath d='M0 12 C 20 22, 30 2, 50 12 S 80 22, 100 12 S 115 6, 120 12 V22 H0 Z' fill='%23E0A94B'/%3E%3C/svg%3E");
+  animation:correnteza 9s linear infinite reverse;
+}
+@keyframes correnteza{ from{background-position-x:0} to{background-position-x:260px} }
+
+/* régua de cota, na borda direita */
+.regua{
+  position:fixed; right:0; top:0; bottom:0; width:74px;
+  z-index:1; pointer-events:none;
+  display:flex; flex-direction:column; justify-content:flex-end;
+  padding-bottom:0;
+  opacity:0; transition:opacity .5s ease;
+}
+.regua--visivel{ opacity:1; }
+.regua__marca{
+  position:absolute; right:0; display:flex; align-items:center; gap:8px;
+  transform:translateY(50%);
+  font-family:var(--dado); font-size:12px; letter-spacing:.06em;
+  color:var(--areia-dim);
+  transition:color .3s ease, opacity .3s ease;
+}
+.regua__marca::after{
+  content:''; width:16px; height:2px; background:currentColor; opacity:.6;
+}
+.regua__marca span{ order:-1; }
+.regua__marca--ativa{ color:var(--solimoes); }
+.regua__marca--ativa::after{ width:30px; opacity:1; height:3px; }
+
+/* ---------- estrutura de telas ---------- */
+.tela{
+  position:fixed; inset:0; z-index:2;
+  display:none; flex-direction:column;
+  padding:clamp(20px, 3.4vmin, 46px);
+  padding-right:calc(clamp(20px, 3.4vmin, 46px) + 62px);
+}
+.tela--ativa{ display:flex; animation:entra .45s ease both; }
+@keyframes entra{ from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none} }
+
+/* ---------- topo ---------- */
+.topo{ display:flex; align-items:center; justify-content:space-between; gap:16px; }
+.marca{
+  font-family:var(--dado); font-size:clamp(11px,1.5vmin,15px);
+  letter-spacing:.22em; text-transform:uppercase; color:var(--solimoes);
+  display:flex; align-items:center; gap:10px; cursor:default;
+}
+.marca::before{
+  content:''; width:10px; height:10px; border-radius:2px;
+  background:var(--marca); transform:rotate(45deg);
+}
+.marca--logo::before{ display:none; }
+.marca__logo{
+  display:block; height:clamp(26px, 3.8vmin, 42px); width:auto;
+}
+.contador{
+  font-family:var(--dado); font-size:clamp(13px,1.9vmin,19px);
+  letter-spacing:.1em; color:var(--areia-dim);
+}
+.contador b{ color:var(--areia); font-weight:700; }
+
+/* barra de tempo */
+.tempo{
+  height:5px; margin-top:14px; border-radius:99px;
+  background:rgba(244,235,218,.12); overflow:hidden;
+}
+.tempo__barra{
+  height:100%; width:100%; border-radius:99px;
+  background:linear-gradient(90deg, var(--solimoes-2), var(--solimoes));
+  transform-origin:left center;
+}
+.tempo__barra--curta{ background:linear-gradient(90deg,#c0392b,var(--vermelho)); }
+
+/* ---------- ABERTURA ---------- */
+.abertura{ justify-content:center; align-items:flex-start; text-align:left; gap:clamp(18px,2.6vmin,34px); }
+.abertura .marca{ position:absolute; top:clamp(20px,3.4vmin,46px); }
+.olho{
+  font-family:var(--dado); font-size:clamp(12px,1.7vmin,16px);
+  letter-spacing:.28em; text-transform:uppercase; color:var(--areia-dim);
+}
+.titulao{
+  font-size:clamp(56px, 13vmin, 190px);
+  line-height:.86; text-transform:uppercase;
+  font-variation-settings:'wdth' 118,'wght' 900;
+  letter-spacing:-.02em;
+}
+.titulao em{ display:block; font-style:normal; color:var(--solimoes); }
+.chamada{
+  font-size:clamp(19px, 2.9vmin, 34px); line-height:1.35; max-width:22ch;
+  font-variation-settings:'wdth' 100,'wght' 500;
+  color:var(--areia-dim);
+}
+.chamada b{ color:var(--areia); font-variation-settings:'wdth' 100,'wght' 700; }
+
+.botao-gigante{
+  margin-top:clamp(10px,2vmin,26px);
+  border:none; border-radius:var(--raio); cursor:pointer;
+  background:var(--marca); color:var(--marca-texto);
+  font-family:var(--display); font-variation-settings:'wdth' 112,'wght' 800;
+  font-size:clamp(22px, 3.6vmin, 46px); text-transform:uppercase; letter-spacing:.02em;
+  padding:clamp(22px,3.4vmin,40px) clamp(34px,5vmin,72px);
+  min-height:96px;
+  box-shadow:0 0 0 0 rgba(var(--marca-rgb),.45);
+  animation:pulsa 2.6s ease-in-out infinite;
+  transition:transform .12s ease;
+}
+.botao-gigante:active{ transform:scale(.97); }
+@keyframes pulsa{
+  0%,100%{ box-shadow:0 0 0 0 rgba(var(--marca-rgb),.42); }
+  70%   { box-shadow:0 0 0 34px rgba(var(--marca-rgb),0); }
+}
+.rodape-abertura{
+  position:absolute; bottom:clamp(20px,3.4vmin,46px);
+  font-family:var(--dado); font-size:clamp(11px,1.5vmin,15px);
+  color:var(--areia-dim); letter-spacing:.08em;
+}
+
+/* ---------- JOGO ---------- */
+.jogo__corpo{ flex:1; display:flex; flex-direction:column; justify-content:center; gap:clamp(18px,3vmin,40px); min-height:0; }
+.pergunta{
+  font-size:clamp(26px, 5.2vmin, 68px); line-height:1.1;
+  font-variation-settings:'wdth' 108,'wght' 800;
+  max-width:18ch;
+}
+.alternativas{ display:grid; gap:clamp(12px,1.8vmin,20px); grid-template-columns:1fr; }
+@media (min-aspect-ratio: 1/1){ .alternativas{ grid-template-columns:1fr 1fr; } }
+
+.alt{
+  display:flex; align-items:center; gap:clamp(14px,2vmin,24px);
+  text-align:left; cursor:pointer;
+  min-height:clamp(96px, 13vmin, 150px);
+  padding:clamp(16px,2.2vmin,26px) clamp(18px,2.4vmin,30px);
+  border-radius:var(--raio);
+  border:2px solid rgba(244,235,218,.18);
+  background:rgba(244,235,218,.055);
+  color:var(--areia);
+  font-family:var(--display);
+  font-size:clamp(17px, 2.5vmin, 30px); line-height:1.22;
+  font-variation-settings:'wdth' 100,'wght' 600;
+  transition:transform .12s ease, background .2s ease, border-color .2s ease, opacity .3s ease;
+}
+.alt:focus-visible{ outline:3px solid var(--solimoes); outline-offset:4px; }
+.alt:active{ transform:scale(.985); }
+.alt__letra{
+  flex:0 0 auto; display:grid; place-items:center;
+  width:clamp(44px,5.4vmin,68px); height:clamp(44px,5.4vmin,68px);
+  border-radius:10px; background:rgba(244,235,218,.1);
+  font-family:var(--dado); font-weight:700;
+  font-size:clamp(16px,2.2vmin,26px); color:var(--solimoes);
+  transition:background .2s ease, color .2s ease;
+}
+.alt--certa{ background:rgba(var(--marca-rgb),.2); border-color:var(--verde); }
+.alt--certa .alt__letra{ background:var(--verde); color:#06210F; }
+.alt--errada{ background:rgba(224,74,49,.18); border-color:var(--vermelho); }
+.alt--errada .alt__letra{ background:var(--vermelho); color:#2A0A04; }
+.alt--apagada{ opacity:.34; }
+.alt[disabled]{ cursor:default; }
+
+/* faixa de veredito — altura reservada, sem pulo de layout */
+.veredito{
+  min-height:clamp(78px,11vmin,120px);
+  display:flex; flex-direction:column; justify-content:center; gap:6px;
+  opacity:0; transition:opacity .25s ease;
+}
+.veredito--visivel{ opacity:1; }
+.veredito__titulo{
+  font-size:clamp(20px,2.9vmin,36px); text-transform:uppercase;
+  font-variation-settings:'wdth' 112,'wght' 800; letter-spacing:.01em;
+}
+.veredito--ok .veredito__titulo{ color:var(--verde); }
+.veredito--nao .veredito__titulo{ color:var(--vermelho); }
+.veredito__fato{
+  font-size:clamp(14px,1.9vmin,22px); line-height:1.35; color:var(--areia-dim);
+  max-width:56ch; font-variation-settings:'wdth' 100,'wght' 400;
+}
+
+/* ---------- RESULTADO ---------- */
+.resultado{ justify-content:center; gap:clamp(14px,2.2vmin,28px); }
+.nota{
+  font-size:clamp(96px, 24vmin, 340px); line-height:.82;
+  font-variation-settings:'wdth' 122,'wght' 900;
+  color:var(--solimoes); letter-spacing:-.03em;
+}
+.nota sup{ font-size:.34em; vertical-align:super; margin-left:.04em; }
+.veredito-final{
+  font-size:clamp(26px, 4.6vmin, 60px); line-height:1.06; text-transform:uppercase;
+  font-variation-settings:'wdth' 112,'wght' 800; max-width:16ch;
+}
+.acertos{
+  font-family:var(--dado); font-size:clamp(14px,2vmin,24px);
+  letter-spacing:.08em; color:var(--areia-dim);
+}
+.acoes{ display:flex; flex-wrap:wrap; gap:14px; margin-top:clamp(8px,1.6vmin,20px); }
+.botao{
+  border:none; border-radius:var(--raio); cursor:pointer;
+  font-family:var(--display); font-variation-settings:'wdth' 110,'wght' 800;
+  font-size:clamp(18px,2.6vmin,32px); text-transform:uppercase;
+  padding:clamp(20px,2.8vmin,32px) clamp(28px,4vmin,56px);
+  min-height:88px; transition:transform .12s ease;
+}
+.botao:active{ transform:scale(.97); }
+.botao:focus-visible{ outline:3px solid var(--solimoes); outline-offset:4px; }
+.botao--primario{ background:var(--marca); color:var(--marca-texto); }
+.botao--fantasma{ background:transparent; color:var(--areia); border:2px solid rgba(244,235,218,.3); }
+.auto-volta{
+  font-family:var(--dado); font-size:clamp(11px,1.5vmin,15px);
+  letter-spacing:.08em; color:var(--areia-dim); margin-top:6px;
+}
+
+/* ---------- painel do operador (toque longo na marca) ---------- */
+.painel{
+  position:fixed; inset:0; z-index:9; display:none;
+  place-items:center; background:rgba(4,10,14,.86); backdrop-filter:blur(6px);
+}
+.painel--aberto{ display:grid; }
+.painel__caixa{
+  width:min(560px,88vw); background:var(--negro-2);
+  border:1px solid rgba(244,235,218,.16); border-radius:18px;
+  padding:32px; display:flex; flex-direction:column; gap:18px;
+}
+.painel h2{ font-size:22px; text-transform:uppercase; font-variation-settings:'wdth' 110,'wght' 800; }
+.painel__linha{
+  display:flex; justify-content:space-between; align-items:center; gap:16px;
+  font-family:var(--dado); font-size:15px; color:var(--areia-dim);
+  padding-bottom:12px; border-bottom:1px solid rgba(244,235,218,.1);
+}
+.painel__linha b{ color:var(--areia); font-size:20px; }
+.painel__botoes{ display:flex; flex-wrap:wrap; gap:10px; }
+.mini{
+  border:1px solid rgba(244,235,218,.3); background:transparent; color:var(--areia);
+  border-radius:10px; padding:14px 18px; font-family:var(--dado); font-size:14px;
+  cursor:pointer; min-height:52px;
+}
+.mini--destaque{ background:var(--solimoes); color:#1B1204; border-color:var(--solimoes); font-weight:700; }
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ====== o rio ====== -->
+<div class="rio" id="rio">
+  <div class="rio__corpo"></div>
+  <div class="rio__onda rio__onda--a"></div>
+  <div class="rio__onda rio__onda--b"></div>
+</div>
+<div class="regua" id="regua" aria-hidden="true"></div>
+
+<!-- ====== TELA 1 — ABERTURA ====== -->
+<section class="tela abertura tela--ativa" id="tela-abertura">
+  <div class="marca marca--logo" data-marca>
+    <img class="marca__logo" src="antonelly-logo.svg" alt="Antonelly Construções">
+  </div>
+  <p class="olho">Feira · Totem interativo</p>
+  <h1 class="titulao">Desafio<em>do Rio</em></h1>
+  <p class="chamada">Cinco perguntas sobre o rio, o porto e a obra. <b>Quanto você sabe?</b></p>
+  <button class="botao-gigante" id="btn-comecar">Toque para começar</button>
+  <p class="rodape-abertura">Menos de 2 minutos · toque na tela</p>
+</section>
+
+<!-- ====== TELA 2 — JOGO ====== -->
+<section class="tela" id="tela-jogo">
+  <header class="topo">
+    <div class="marca" data-marca>Desafio do Rio</div>
+    <div class="contador"><b id="num-atual">1</b> / 5</div>
+  </header>
+  <div class="tempo"><div class="tempo__barra" id="barra-tempo"></div></div>
+
+  <div class="jogo__corpo">
+    <h2 class="pergunta" id="texto-pergunta">—</h2>
+    <div class="alternativas" id="alternativas"></div>
+  </div>
+
+  <div class="veredito" id="veredito" role="status" aria-live="polite">
+    <p class="veredito__titulo" id="veredito-titulo"></p>
+    <p class="veredito__fato" id="veredito-fato"></p>
+  </div>
+</section>
+
+<!-- ====== TELA 3 — RESULTADO ====== -->
+<section class="tela resultado" id="tela-resultado">
+  <div class="marca" data-marca>Desafio do Rio</div>
+  <p class="olho" style="margin-top:auto">Sua cota</p>
+  <p class="nota" id="nota">0<sup>%</sup></p>
+  <h2 class="veredito-final" id="titulo-final">—</h2>
+  <p class="acertos" id="acertos">—</p>
+  <div class="acoes">
+    <button class="botao botao--primario" id="btn-denovo">Jogar de novo</button>
+    <button class="botao botao--fantasma" id="btn-sair">Próximo jogador</button>
+  </div>
+  <p class="auto-volta" id="auto-volta"></p>
+  <div style="margin-top:auto"></div>
+</section>
+
+<!-- ====== PAINEL DO OPERADOR ====== -->
+<div class="painel" id="painel">
+  <div class="painel__caixa">
+    <h2>Painel do operador</h2>
+    <div class="painel__linha">Partidas nesta sessão <b id="p-partidas">0</b></div>
+    <div class="painel__linha">Média de acerto <b id="p-media">—</b></div>
+    <div class="painel__linha">Perguntas no banco <b id="p-banco">0</b></div>
+    <div class="painel__botoes">
+      <button class="mini" id="p-som">Som: ligado</button>
+      <button class="mini" id="p-tela">Tela cheia</button>
+      <button class="mini" id="p-zerar">Zerar contadores</button>
+      <button class="mini mini--destaque" id="p-fechar">Fechar</button>
+    </div>
+    <p style="font-family:var(--dado);font-size:12px;color:var(--areia-dim);line-height:1.5">
+      Para abrir este painel: mantenha o dedo 2 segundos sobre o nome no topo da tela.
+    </p>
+  </div>
+</div>
+
+<script>
+/* =========================================================================
+   CONFIGURAÇÃO — ajuste tudo por aqui, sem mexer no resto do código
+   ========================================================================= */
+const CONFIG = {
+  perguntasPorPartida: 5,
+  segundosPorPergunta: 25,      // 0 = sem cronômetro
+  msFeedbackCerto: 2000,
+  msFeedbackErrado: 2900,
+  segundosOciosoJogo: 45,       // sem toque durante a partida → volta à abertura
+  segundosOciosoResultado: 25,  // resultado na tela → volta à abertura
+  embaralharAlternativas: true,
+  mostrarFato: true,
+  som: true
+};
+
+/* =========================================================================
+   BANCO DE PERGUNTAS — 30 itens
+   c = índice da alternativa correta (0 a 3)
+   Revise os textos com a equipe da Antonelly antes da feira.
+   ========================================================================= */
+const BANCO = [
+{ p:"O que é uma poita?",
+  a:["Um peso de concreto ou ferro que ancora o flutuante no leito do rio",
+     "Uma ferramenta usada para misturar concreto",
+     "O nome da rampa que liga o porto à margem",
+     "Um tipo de embarcação de pequeno porte"], c:0,
+  f:"As poitas ficam no fundo do rio e seguram o porto flutuante no lugar o ano inteiro." },
+
+{ p:"A sigla IP4 significa:",
+  a:["Instalação Portuária Pública de Pequeno Porte",
+     "Índice de Produtividade em 4 etapas",
+     "Inspeção Periódica de Portos, nível 4",
+     "Instalação de Passageiros com 4 rampas"], c:0,
+  f:"A Antonelly cuida da manutenção e conservação de IP4s em mais de 49 municípios do Norte." },
+
+{ p:"Por que os portos da Amazônia costumam ser flutuantes?",
+  a:["Porque o nível do rio sobe e desce vários metros ao longo do ano",
+     "Porque a lei proíbe portos fixos em rios",
+     "Porque não existe terreno firme na região",
+     "Porque flutuantes dispensam manutenção"], c:0,
+  f:"O flutuante acompanha a água: na cheia sobe, na seca desce, e o porto segue operando." },
+
+{ p:"Entre a cheia e a seca, quanto o rio pode variar em Manaus?",
+  a:["Cerca de 15 metros","Cerca de 2 metros","Cerca de 5 metros","Cerca de 40 metros"], c:0,
+  f:"A cota do rio é medida todos os dias no porto de Manaus há mais de um século." },
+
+{ p:"No Encontro das Águas, quais rios correm lado a lado sem se misturar de imediato?",
+  a:["Negro e Solimões","Negro e Madeira","Amazonas e Tapajós","Solimões e Purus"], c:0,
+  f:"Temperatura, densidade e velocidade diferentes mantêm as águas separadas por quilômetros." },
+
+{ p:"O que é dragagem?",
+  a:["A retirada de sedimentos do fundo do rio para manter a profundidade",
+     "A pintura anticorrosiva do casco das embarcações",
+     "A amarração das balsas no cais",
+     "A limpeza da vegetação das margens"], c:0,
+  f:"Sem dragagem, o assoreamento pode fechar o acesso das embarcações ao porto." },
+
+{ p:"O calado de uma embarcação é:",
+  a:["A parte do casco que fica submersa","A altura do mastro",
+     "A largura máxima do convés","O peso total da carga"], c:0,
+  f:"É o calado que decide se a embarcação passa ou não em determinado trecho do rio." },
+
+{ p:"Para que serve a régua de nível instalada no porto?",
+  a:["Para medir a cota do rio, ou seja, a altura da água",
+     "Para medir a velocidade da correnteza",
+     "Para calcular o peso das balsas",
+     "Para marcar a distância até a outra margem"], c:0,
+  f:"A leitura diária da régua orienta a operação do porto durante todo o ano." },
+
+{ p:"Qual EPI não pode faltar em serviços realizados sobre a água?",
+  a:["Colete salva-vidas","Protetor auricular","Máscara de solda","Perneira de raspa"], c:0,
+  f:"Trabalho sobre lâmina d'água exige colete, sinalização e equipe de resgate a postos." },
+
+{ p:"O que é enrocamento?",
+  a:["Uma camada de pedras que protege a margem contra a erosão",
+     "Uma mistura de cimento e areia para reboco",
+     "Uma escavação para fundação profunda",
+     "Uma estrutura de madeira para andaimes"], c:0,
+  f:"É uma das defesas mais usadas contra o desgaste das margens pela correnteza." },
+
+{ p:"Na Amazônia, o fenômeno das \"terras caídas\" é:",
+  a:["O desmoronamento de trechos da margem do rio",
+     "Uma chuva forte de fim de tarde",
+     "O período mais seco do ano",
+     "Um tipo de solo argiloso avermelhado"], c:0,
+  f:"Costuma acontecer na vazante, quando a água baixa e a margem perde sustentação." },
+
+{ p:"Qual material do concreto reage com a água e faz a mistura endurecer?",
+  a:["O cimento","A areia","A brita","O aditivo plastificante"], c:0,
+  f:"A reação se chama hidratação e continua acontecendo por semanas depois da concretagem." },
+
+{ p:"O fck do concreto indica:",
+  a:["A resistência do concreto à compressão","O tempo de cura em dias",
+     "A quantidade de água da mistura","A cor final da peça"], c:0,
+  f:"É medido em corpos de prova rompidos em laboratório, normalmente aos 28 dias." },
+
+{ p:"O que é uma balsa?",
+  a:["Uma embarcação de fundo chato usada para transportar carga",
+     "Um flutuante fixo usado como porto",
+     "Um tipo de guindaste sobre trilhos",
+     "Uma boia grande de sinalização"], c:0,
+  f:"Fundo chato significa pouco calado, ideal para rios que mudam de profundidade." },
+
+{ p:"O empurrador é a embarcação que:",
+  a:["Impulsiona balsas e comboios pelo rio","Transporta apenas passageiros",
+     "Faz a dragagem do canal","Mede a profundidade do leito"], c:0,
+  f:"Um único empurrador pode conduzir um comboio com milhares de toneladas." },
+
+{ p:"Em quais estados a Antonelly atua?",
+  a:["Amazonas, Rondônia e Roraima","Apenas no Amazonas",
+     "Amazonas e Pará","Em todos os estados do país"], c:0,
+  f:"São mais de 49 municípios atendidos na Região Norte." },
+
+{ p:"Em que ano a Antonelly foi fundada?",
+  a:["2001","1985","2012","2019"], c:0,
+  f:"Mais de duas décadas de atuação em obras e serviços na Região Norte." },
+
+{ p:"Para as comunidades do interior do Amazonas, o principal caminho de transporte é:",
+  a:["O rio","A rodovia","A ferrovia","O transporte aéreo"], c:0,
+  f:"Por isso um porto de pequeno porte muda a rotina de uma comunidade inteira." },
+
+{ p:"Os cabeços de amarração servem para:",
+  a:["Prender os cabos das embarcações ao cais","Sustentar a cobertura do porto",
+     "Marcar o nível da água","Iluminar a rampa de acesso"], c:0,
+  f:"São peças que recebem esforço constante e entram na rotina de inspeção do porto." },
+
+{ p:"O que significa manutenção preventiva?",
+  a:["O serviço feito antes de o problema aparecer",
+     "O reparo feito depois da quebra",
+     "A troca completa da estrutura",
+     "A limpeza obrigatória no fim do ano"], c:0,
+  f:"Prevenir custa uma fração do que custa recuperar uma estrutura já comprometida." },
+
+{ p:"As boias coloridas ao longo do rio indicam:",
+  a:["Os limites do canal seguro de navegação","Os melhores pontos de pesca",
+     "Os locais de embarque de passageiros","A divisa entre municípios"], c:0,
+  f:"A sinalização náutica segue um padrão de cores reconhecido internacionalmente." },
+
+{ p:"O DDS, Diálogo Diário de Segurança, acontece:",
+  a:["Antes do início dos trabalhos, todos os dias","Uma vez por mês",
+     "Somente depois de um acidente","Apenas na assinatura do contrato"], c:0,
+  f:"São poucos minutos por dia que mudam a estatística de acidentes de uma obra." },
+
+{ p:"A NR-35 trata de:",
+  a:["Trabalho em altura","Espaço confinado","Máquinas e equipamentos","Instalações elétricas"], c:0,
+  f:"Ela vale para qualquer atividade acima de dois metros com risco de queda." },
+
+{ p:"O que é aterro hidráulico?",
+  a:["O preenchimento de uma área com material bombeado junto com água",
+     "Um aterro feito apenas na época da cheia",
+     "Uma barragem para geração de energia",
+     "Uma escavação feita debaixo d'água"], c:0,
+  f:"Muitas vezes o material vem da própria dragagem, aproveitando o sedimento retirado." },
+
+{ p:"Qual equipamento mede ângulos e distâncias em levantamentos topográficos?",
+  a:["A estação total","O paquímetro","A trena de bolso","O prumo de pedreiro"], c:0,
+  f:"É a partir desse levantamento que a obra é locada no terreno com precisão." },
+
+{ p:"Numa embarcação, bombordo é o lado:",
+  a:["Esquerdo, para quem olha para a frente","Direito, para quem olha para a frente",
+     "De trás","O fundo do casco"], c:0,
+  f:"O lado direito é boreste. Os nomes evitam confusão a bordo, seja qual for a direção." },
+
+{ p:"A proa de uma embarcação é:",
+  a:["A parte da frente","A parte de trás","O piso interno","A cabine de comando"], c:0,
+  f:"A parte de trás é a popa, e é lá que normalmente ficam o leme e os propulsores." },
+
+{ p:"O famoso porto flutuante de Manaus foi inaugurado em:",
+  a:["1902","1850","1967","2004"], c:0,
+  f:"Ele sobe e desce com a cota do rio há mais de 120 anos, e ainda é referência de engenharia." },
+
+{ p:"O que é o canteiro de obras?",
+  a:["A área da obra com as instalações de apoio",
+     "O escritório central da empresa",
+     "O depósito de entulho",
+     "A área verde plantada ao redor da obra"], c:0,
+  f:"Um canteiro bem organizado é o primeiro indicador de uma obra segura." },
+
+{ p:"A ponte metálica articulada de um porto flutuante serve para:",
+  a:["Ligar a margem ao flutuante acompanhando a variação do nível",
+     "Sustentar o guindaste do pátio",
+     "Proteger a carga contra a chuva",
+     "Funcionar como quebra-mar"], c:0,
+  f:"A articulação é o que permite a passagem continuar segura na cheia e na seca." }
+];
+
+/* =========================================================================
+   ESTADO
+   ========================================================================= */
+const LETRAS = ["A","B","C","D"];
+let sacola = [];                 // sorteio sem repetição entre partidas seguidas
+let partida = null;
+let bloqueado = false;
+let cronometro = null, avancar = null, ocioso = null, contagemRegressiva = null;
+let som = CONFIG.som;
+let sessao = { partidas:0, somaPercentual:0 };
+
+const el = id => document.getElementById(id);
+const telas = { abertura: el("tela-abertura"), jogo: el("tela-jogo"), resultado: el("tela-resultado") };
+
+/* ---------- utilidades ---------- */
+function embaralhar(a){
+  const b = a.slice();
+  for(let i=b.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [b[i],b[j]]=[b[j],b[i]]; }
+  return b;
+}
+function sortearPerguntas(n){
+  if(sacola.length < n) sacola = embaralhar(BANCO.map((_,i)=>i));
+  const ids = sacola.splice(0, n);
+  return ids.map(i=>{
+    const q = BANCO[i];
+    let alts = q.a.map((txt,idx)=>({txt, certa: idx===q.c}));
+    if(CONFIG.embaralharAlternativas) alts = embaralhar(alts);
+    return { pergunta:q.p, fato:q.f || "", alts };
+  });
+}
+function mostrarTela(nome){
+  Object.values(telas).forEach(t=>t.classList.remove("tela--ativa"));
+  telas[nome].classList.add("tela--ativa");
+}
+function definirNivel(pct){ document.documentElement.style.setProperty("--nivel", pct + "%"); }
+
+/* ---------- régua de cota ---------- */
+function montarRegua(marcas, ativo){
+  const r = el("regua");
+  r.innerHTML = "";
+  marcas.forEach(m=>{
+    const d = document.createElement("div");
+    d.className = "regua__marca" + (m.valor===ativo ? " regua__marca--ativa" : "");
+    d.style.bottom = m.pos + "%";
+    d.innerHTML = "<span>" + m.rotulo + "</span>";
+    r.appendChild(d);
+  });
+  r.classList.add("regua--visivel");
+}
+
+/* ---------- som ---------- */
+let ctxAudio = null;
+function bip(freqs, dur=.12, tipo="sine", vol=.16){
+  if(!som) return;
+  try{
+    ctxAudio = ctxAudio || new (window.AudioContext||window.webkitAudioContext)();
+    if(ctxAudio.state === "suspended") ctxAudio.resume();
+    freqs.forEach((f,i)=>{
+      const o = ctxAudio.createOscillator(), g = ctxAudio.createGain();
+      o.type = tipo; o.frequency.value = f;
+      const t0 = ctxAudio.currentTime + i*dur*.85;
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(vol, t0+.015);
+      g.gain.exponentialRampToValueAtTime(.0001, t0+dur);
+      o.connect(g); g.connect(ctxAudio.destination);
+      o.start(t0); o.stop(t0+dur+.02);
+    });
+  }catch(e){/* som é opcional */}
+}
+const somToque  = ()=> bip([520], .06, "triangle", .10);
+const somCerto  = ()=> bip([660, 880, 1180], .13);
+const somErrado = ()=> bip([190, 140], .19, "sawtooth", .12);
+const somFim    = ()=> bip([523, 659, 784, 1046], .15);
+
+/* =========================================================================
+   FLUXO
+   ========================================================================= */
+function irParaAbertura(){
+  limparTemporizadores();
+  partida = null;
+  definirNivel(10);
+  el("regua").classList.remove("regua--visivel");
+  mostrarTela("abertura");
+}
+
+function iniciarPartida(){
+  limparTemporizadores();
+  partida = { itens: sortearPerguntas(CONFIG.perguntasPorPartida), indice:0, acertos:0 };
+  mostrarTela("jogo");
+  montarRegua(
+    Array.from({length:CONFIG.perguntasPorPartida+1}, (_,i)=>({
+      valor:i, rotulo:String(i).padStart(2,"0"), pos: 8 + i*(26/CONFIG.perguntasPorPartida)
+    })), 0);
+  definirNivel(8);
+  renderPergunta();
+}
+
+function renderPergunta(){
+  const item = partida.itens[partida.indice];
+  bloqueado = false;
+
+  el("num-atual").textContent = partida.indice + 1;
+  el("texto-pergunta").textContent = item.pergunta;
+
+  const box = el("alternativas");
+  box.innerHTML = "";
+  item.alts.forEach((alt, i)=>{
+    const b = document.createElement("button");
+    b.className = "alt";
+    b.type = "button";
+    b.innerHTML = '<span class="alt__letra">'+LETRAS[i]+'</span><span class="alt__txt"></span>';
+    b.querySelector(".alt__txt").textContent = alt.txt;
+    b.addEventListener("click", ()=> responder(b, alt.certa));
+    box.appendChild(b);
+  });
+
+  const v = el("veredito");
+  v.className = "veredito";
+  el("veredito-titulo").textContent = "";
+  el("veredito-fato").textContent = "";
+
+  iniciarCronometro();
+  atualizarRegua(partida.indice);
+}
+
+function atualizarRegua(respondidas){
+  const passo = 26 / CONFIG.perguntasPorPartida;
+  definirNivel(8 + respondidas * passo);
+  document.querySelectorAll(".regua__marca").forEach((m,i)=>{
+    m.classList.toggle("regua__marca--ativa", i === respondidas);
+  });
+}
+
+function iniciarCronometro(){
+  const barra = el("barra-tempo");
+  barra.classList.remove("tempo__barra--curta");
+  barra.style.transition = "none";
+  barra.style.width = "100%";
+  if(!CONFIG.segundosPorPergunta) return;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    barra.style.transition = "width " + CONFIG.segundosPorPergunta + "s linear";
+    barra.style.width = "0%";
+  }));
+  clearTimeout(cronometro);
+  cronometro = setTimeout(()=>{ if(!bloqueado) responder(null, false, true); },
+                          CONFIG.segundosPorPergunta * 1000);
+  setTimeout(()=>{ if(!bloqueado) barra.classList.add("tempo__barra--curta"); },
+             Math.max(0, (CONFIG.segundosPorPergunta - 6) * 1000));
+}
+
+function responder(botao, certa, tempoEsgotado=false){
+  if(bloqueado) return;
+  bloqueado = true;
+  clearTimeout(cronometro);
+
+  const barra = el("barra-tempo");
+  barra.style.transition = "none";
+  barra.style.width = getComputedStyle(barra).width;
+
+  const botoes = [...document.querySelectorAll(".alt")];
+  const item = partida.itens[partida.indice];
+  const idxCerta = item.alts.findIndex(a=>a.certa);
+
+  botoes.forEach(b=>{ b.disabled = true; b.classList.add("alt--apagada"); });
+  botoes[idxCerta].classList.remove("alt--apagada");
+  botoes[idxCerta].classList.add("alt--certa");
+  if(botao && !certa){ botao.classList.remove("alt--apagada"); botao.classList.add("alt--errada"); }
+
+  const v = el("veredito");
+  v.classList.add("veredito--visivel");
+  if(certa){
+    partida.acertos++;
+    v.classList.add("veredito--ok");
+    el("veredito-titulo").textContent = "Isso mesmo!";
+    somCerto();
+  }else{
+    v.classList.add("veredito--nao");
+    el("veredito-titulo").textContent = tempoEsgotado ? "Tempo esgotado" : "Não foi essa";
+    somErrado();
+  }
+  el("veredito-fato").textContent = CONFIG.mostrarFato ? item.fato : "";
+
+  atualizarRegua(partida.indice + 1);
+
+  const espera = certa ? CONFIG.msFeedbackCerto : CONFIG.msFeedbackErrado;
+  avancar = setTimeout(()=>{
+    partida.indice++;
+    if(partida.indice >= partida.itens.length) mostrarResultado();
+    else renderPergunta();
+  }, espera);
+}
+
+function mostrarResultado(){
+  limparTemporizadores();
+  const acertos = partida.acertos;
+  const total = partida.itens.length;
+  const pct = Math.round(acertos / total * 100);
+
+  sessao.partidas++;
+  sessao.somaPercentual += pct;
+
+  el("nota").innerHTML = pct + "<sup>%</sup>";
+  el("acertos").textContent = acertos + " de " + total + " perguntas certas";
+  el("titulo-final").textContent = mensagem(pct);
+
+  mostrarTela("resultado");
+  montarRegua([0,25,50,75,100].map(v=>({valor:v, rotulo:v+"%", pos: 8 + v*0.62})), pct);
+  requestAnimationFrame(()=> definirNivel(8 + pct * 0.62));
+  somFim();
+
+  let restante = CONFIG.segundosOciosoResultado;
+  el("auto-volta").textContent = "Voltando à tela inicial em " + restante + "s";
+  contagemRegressiva = setInterval(()=>{
+    restante--;
+    el("auto-volta").textContent = "Voltando à tela inicial em " + restante + "s";
+    if(restante <= 0) irParaAbertura();
+  }, 1000);
+}
+
+function mensagem(pct){
+  if(pct === 100) return "Cheia máxima! Você conhece o rio de ponta a ponta";
+  if(pct >= 80)   return "Quase lá em cima: só faltou um palmo de água";
+  if(pct >= 60)   return "Boa navegação — o canal está aberto";
+  if(pct >= 40)   return "Águas médias: dá para melhorar na próxima";
+  if(pct >= 20)   return "Vazante. Passe no estande e a gente te conta o resto";
+  return "Seca total — mas todo mundo começa por aqui";
+}
+
+/* ---------- temporizadores e ociosidade ---------- */
+function limparTemporizadores(){
+  clearTimeout(cronometro); clearTimeout(avancar); clearInterval(contagemRegressiva);
+}
+function reiniciarOcioso(){
+  clearTimeout(ocioso);
+  if(!partida) return;                       // abertura não expira
+  const s = telas.resultado.classList.contains("tela--ativa")
+    ? CONFIG.segundosOciosoResultado + 5
+    : CONFIG.segundosOciosoJogo;
+  ocioso = setTimeout(irParaAbertura, s * 1000);
+}
+
+/* ---------- eventos ---------- */
+el("btn-comecar").addEventListener("click", ()=>{ somToque(); iniciarPartida(); });
+el("btn-denovo").addEventListener("click", ()=>{ somToque(); iniciarPartida(); });
+el("btn-sair").addEventListener("click", ()=>{ somToque(); irParaAbertura(); });
+
+document.addEventListener("pointerdown", e=>{
+  reiniciarOcioso();
+  if(e.target.closest(".alt")) somToque();
+}, true);
+
+document.addEventListener("keydown", e=>{
+  reiniciarOcioso();
+  if(telas.abertura.classList.contains("tela--ativa") && (e.key === "Enter" || e.key === " ")){
+    e.preventDefault(); iniciarPartida(); return;
+  }
+  if(telas.jogo.classList.contains("tela--ativa") && ["1","2","3","4"].includes(e.key)){
+    const b = document.querySelectorAll(".alt")[+e.key - 1];
+    if(b && !b.disabled) b.click();
+  }
+});
+
+/* comportamentos de quiosque */
+document.addEventListener("contextmenu", e=>e.preventDefault());
+document.addEventListener("dragstart", e=>e.preventDefault());
+document.addEventListener("gesturestart", e=>e.preventDefault());
+
+/* tela sempre acesa */
+let wakeLock = null;
+async function manterAcordado(){
+  try{ if("wakeLock" in navigator) wakeLock = await navigator.wakeLock.request("screen"); }catch(e){}
+}
+document.addEventListener("visibilitychange", ()=>{ if(document.visibilityState === "visible") manterAcordado(); });
+manterAcordado();
+
+/* ---------- painel do operador: toque longo de 2s na marca ---------- */
+let pressao = null;
+document.querySelectorAll("[data-marca]").forEach(m=>{
+  m.addEventListener("pointerdown", ()=>{ pressao = setTimeout(abrirPainel, 2000); });
+  ["pointerup","pointerleave","pointercancel"].forEach(ev=>
+    m.addEventListener(ev, ()=> clearTimeout(pressao)));
+});
+function abrirPainel(){
+  el("p-partidas").textContent = sessao.partidas;
+  el("p-media").textContent = sessao.partidas
+    ? Math.round(sessao.somaPercentual / sessao.partidas) + "%" : "—";
+  el("p-banco").textContent = BANCO.length;
+  el("p-som").textContent = "Som: " + (som ? "ligado" : "desligado");
+  el("painel").classList.add("painel--aberto");
+}
+el("p-fechar").addEventListener("click", ()=> el("painel").classList.remove("painel--aberto"));
+el("p-som").addEventListener("click", ()=>{ som = !som; el("p-som").textContent = "Som: " + (som?"ligado":"desligado"); });
+el("p-zerar").addEventListener("click", ()=>{ sessao = {partidas:0, somaPercentual:0}; abrirPainel(); });
+el("p-tela").addEventListener("click", ()=>{
+  if(!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+  else document.exitFullscreen?.();
+});
+
+/* ---------- partida ---------- */
+irParaAbertura();
+</script>
+</body>
+</html>
