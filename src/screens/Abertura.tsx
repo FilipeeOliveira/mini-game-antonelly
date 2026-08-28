@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import logoAntonelly from "@/assets/antonelly-logo.svg";
 
 type AberturaProps = {
   onComecar: () => void;
@@ -27,7 +28,7 @@ export function Abertura({ onComecar, onAbrirPainel }: AberturaProps) {
         onPointerLeave={cancelarPressao}
         onPointerCancel={cancelarPressao}
       >
-        <img className="marca__logo" src="/antonelly-logo.svg" alt="Antonelly Construções" />
+        <img className="marca__logo" src={logoAntonelly} alt="Antonelly Construções" />
       </div>
       <p className="olho">Feira · Totem interativo</p>
       <h1 className="titulao">

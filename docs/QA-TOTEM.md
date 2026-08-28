@@ -114,26 +114,30 @@ performance, etc.), com a data e o nome de quem testou.
    (pendrive, rede local, etc.). Não é necessário copiar `node_modules`
    nem o restante do repositório — só o conteúdo de `dist/`.
 
-3. **Servir `dist/` com um servidor estático local — NÃO abrir
-   `dist/index.html` direto via `file://`.**
+3. **Recomendado: servir `dist/` com um servidor estático local**, em
+   vez de abrir `dist/index.html` direto via `file://`.
 
-   **O que foi verificado:** o build usa `base: "./"` (ajustado nesta
-   task), então o `index.html`, o CSS e o JS do bundle já referenciam
-   os assets com caminho relativo (`./assets/...`). Isso resolve a
-   maior parte do problema de abrir via `file://`. **Porém, o logo da
-   Antonelly (`src/screens/Abertura.tsx`) usa um caminho absoluto
-   hardcoded (`/antonelly-logo.svg`)** — esse caminho não é reescrito
-   pelo Vite (strings literais em JSX não passam pelo pipeline de
-   assets), então sob `file://` puro o navegador tenta carregar
-   `file:///antonelly-logo.svg` (raiz do sistema de arquivos) e a
-   imagem do logo quebra. Corrigir isso exigiria mudar o componente
-   `Abertura.tsx`, fora do escopo desta task (task 12 só autoriza mudar
-   `vite.config.ts`).
+   **O que foi verificado:** o build usa `base: "./"` (ajustado na
+   Task 12), então o `index.html`, o CSS e o JS do bundle referenciam
+   os assets com caminho relativo (`./assets/...`). O logo da Antonelly
+   também foi corrigido (fix round 1 da Task 12): antes ele era
+   referenciado em `src/screens/Abertura.tsx` por um caminho absoluto
+   hardcoded (`/antonelly-logo.svg`, servido da pasta `public/`), o que
+   quebrava sob `file://` puro. Agora o logo mora em
+   `src/assets/antonelly-logo.svg` e é importado como módulo
+   (`import logoAntonelly from "@/assets/antonelly-logo.svg"`) — o Vite
+   emite um arquivo com hash em `dist/assets/` e resolve a URL em
+   runtime via `new URL(..., import.meta.url)`, que funciona tanto sob
+   `file://` quanto atrás de um servidor. Verificado manualmente
+   (resolução de URL simulada + checagem de que o arquivo existe no
+   caminho resolvido) — ver relatório da Task 12 para o comando exato.
 
-   **Testado e confirmado funcionando:** servir `dist/` com um servidor
-   HTTP estático simples (`python -m http.server` ou equivalente)
-   carrega o `index.html`, o bundle JS, o CSS e o logo, todos com
-   `200 OK`. Esse é o caminho recomendado para o totem:
+   Ainda assim, o servidor estático local continua sendo o caminho
+   **recomendado** para o totem, não porque o logo quebre mais (não
+   quebra), mas porque a Wake Lock API exige contexto seguro
+   (`https://` ou `http://localhost`) — algo que `file://` nunca
+   satisfaz, independente do logo. Ou seja: `file://` deve funcionar
+   visualmente agora, mas ainda vai perder o wake lock.
 
    ```bash
    # na máquina Windows, dentro da pasta dist/
@@ -145,11 +149,6 @@ performance, etc.), com a data e o nome de quem testou.
    ```
    chrome.exe --kiosk http://localhost:8080
    ```
-
-   Se por algum motivo for necessário abrir via `file://` sem servidor
-   (não recomendado), o app carrega mas **o logo da abertura ficará
-   quebrado** — vale a pena verificar isso visualmente antes de decidir
-   usar esse caminho.
 
 4. **Wake lock e contexto seguro:** a Wake Lock API do navegador só
    funciona em contexto seguro — `https://` ou `http://localhost`
