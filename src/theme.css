@@ -222,9 +222,26 @@ body {
   border-radius: 99px;
   background: linear-gradient(90deg, var(--solimoes-2), var(--solimoes));
   transform-origin: left center;
+  animation-name: tempo-encolhe;
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
 }
 .tempo__barra--curta {
   background: linear-gradient(90deg, #c0392b, var(--vermelho));
+}
+/* Encolhe a barra de 100% a 0% (via transform, não width, para não forçar
+   layout) ao longo de segundosPorPergunta — ver Jogo.tsx, que aplica a
+   duração via animationDuration inline e reinicia a animação a cada
+   pergunta remontando o elemento (key={indice}). Pausada (animationPlayState)
+   assim que o jogador responde, para não continuar drenando durante a pausa
+   de feedback. */
+@keyframes tempo-encolhe {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
 }
 
 .abertura {

@@ -222,4 +222,90 @@ describe("Jogo", () => {
 
     expect(onFim).not.toHaveBeenCalled();
   });
+
+  // ---------------------------------------------------------------------
+  // Barra de tempo (fix: a versão React renderizava a barra sempre em
+  // width:100%, sem nenhuma indicação visual do tempo passando — o jogador
+  // via "Tempo esgotado" sem aviso algum, numa pergunta que parecia ter
+  // tempo de sobra). A barra volta a encolher via animação CSS
+  // (transform: scaleX), com a duração/estado aplicados via inline style —
+  // é isso que os testes abaixo verificam, sem tentar observar a animação
+  // CSS em si dentro do jsdom.
+  describe("barra de tempo", () => {
+    it("aplica a duração da animação conforme segundosPorPergunta", () => {
+      const { container } = render(
+        <Jogo
+          itens={itens}
+          segundosPorPergunta={25}
+          msFeedbackCerto={100}
+          msFeedbackErrado={100}
+          mostrarFato
+          onFim={() => {}}
+        />
+      );
+      const barra = container.querySelector(".tempo__barra") as HTMLElement;
+      expect(barra.style.animationDuration).toBe("25s");
+    });
+
+    it("ganha a classe tempo__barra--curta nos últimos 6s da pergunta", () => {
+      const { container } = render(
+        <Jogo
+          itens={itens}
+          segundosPorPergunta={10}
+          msFeedbackCerto={100}
+          msFeedbackErrado={100}
+          mostrarFato
+          onFim={() => {}}
+        />
+      );
+      const barra = () => container.querySelector(".tempo__barra") as HTMLElement;
+      expect(barra().className).not.toContain("tempo__barra--curta");
+
+      act(() => vi.advanceTimersByTime(4000)); // 10s - 6s = falta 4s para os últimos 6s
+
+      expect(barra().className).toContain("tempo__barra--curta");
+    });
+
+    it("reinicia a barra (sem tempo__barra--curta) ao avançar para a próxima pergunta", () => {
+      const { container } = render(
+        <Jogo
+          itens={itens}
+          segundosPorPergunta={10}
+          msFeedbackCerto={100}
+          msFeedbackErrado={100}
+          mostrarFato
+          onFim={() => {}}
+        />
+      );
+      const barra = () => container.querySelector(".tempo__barra") as HTMLElement;
+
+      act(() => vi.advanceTimersByTime(4000)); // entra nos últimos 6s da pergunta 1
+      expect(barra().className).toContain("tempo__barra--curta");
+
+      fireEvent.click(screen.getByText("Alternativa 0")); // responde certo, avança
+      act(() => vi.advanceTimersByTime(100)); // msFeedbackCerto
+
+      expect(screen.getByText("Pergunta 2")).toBeInTheDocument();
+      expect(barra().className).not.toContain("tempo__barra--curta");
+    });
+
+    it("congela a animação (animationPlayState: paused) assim que o jogador responde", () => {
+      const { container } = render(
+        <Jogo
+          itens={itens}
+          segundosPorPergunta={10}
+          msFeedbackCerto={500}
+          msFeedbackErrado={500}
+          mostrarFato
+          onFim={() => {}}
+        />
+      );
+      const barra = container.querySelector(".tempo__barra") as HTMLElement;
+      expect(barra.style.animationPlayState).toBe("running");
+
+      fireEvent.click(screen.getByText("Alternativa 0"));
+
+      expect(barra.style.animationPlayState).toBe("paused");
+    });
+  });
 });

@@ -1,7 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import type { ItemPartida, ResultadoPartida } from "@/game/types";
+import { calcularPercentual } from "@/game/engine";
 
 const LETRAS = ["A", "B", "C", "D"];
+// Últimos N segundos da pergunta em que a barra de tempo vira vermelha
+// (.tempo__barra--curta), fiel ao `iniciarCronometro` do original.
+const SEGUNDOS_BARRA_CURTA = 6;
 
 type JogoProps = {
   itens: ItemPartida[];
@@ -29,6 +33,7 @@ export function Jogo({
   const [bloqueado, setBloqueado] = useState(false);
   const [veredito, setVeredito] = useState<"certo" | "errado" | null>(null);
   const [expirou, setExpirou] = useState(false);
+  const [barraCurta, setBarraCurta] = useState(false);
   const acertosRef = useRef(0);
   const temposRef = useRef<number[]>([]);
   const inicioPerguntaRef = useRef(Date.now());
@@ -64,13 +69,24 @@ export function Jogo({
     setBloqueado(false);
     setVeredito(null);
     setExpirou(false);
+    setBarraCurta(false);
     inicioPerguntaRef.current = Date.now();
 
     if (!segundosPorPergunta) return;
     const cronometro = setTimeout(() => {
       responder(-1, false, true);
     }, segundosPorPergunta * 1000);
-    return () => clearTimeout(cronometro);
+    let corridoBarraCurta: ReturnType<typeof setTimeout> | undefined;
+    if (segundosPorPergunta > SEGUNDOS_BARRA_CURTA) {
+      corridoBarraCurta = setTimeout(
+        () => setBarraCurta(true),
+        (segundosPorPergunta - SEGUNDOS_BARRA_CURTA) * 1000
+      );
+    }
+    return () => {
+      clearTimeout(cronometro);
+      if (corridoBarraCurta) clearTimeout(corridoBarraCurta);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [indice]);
 
@@ -109,7 +125,7 @@ export function Jogo({
         onFim({
           acertos: acertosRef.current,
           total: itens.length,
-          percentual: Math.round((acertosRef.current / itens.length) * 100),
+          percentual: calcularPercentual(acertosRef.current, itens.length),
           tempoTotalMs: temposRef.current.reduce((a, b) => a + b, 0),
           tempoRespostasMs: temposRef.current,
         });
@@ -128,7 +144,22 @@ export function Jogo({
         </div>
       </header>
       <div className="tempo">
-        <div className="tempo__barra" />
+        <div
+          // key={indice} força a remontagem do elemento a cada pergunta,
+          // reiniciando a animação CSS do zero (equivalente a reatribuir
+          // width/transition no `iniciarCronometro` do original).
+          key={indice}
+          className={["tempo__barra", barraCurta ? "tempo__barra--curta" : ""]
+            .filter(Boolean)
+            .join(" ")}
+          style={{
+            animationDuration: `${segundosPorPergunta}s`,
+            // Congela a barra onde estiver assim que o jogador responde, em
+            // vez de continuar drenando durante a pausa de feedback — fiel
+            // ao original, que parava o cronômetro ao responder.
+            animationPlayState: bloqueado ? "paused" : "running",
+          }}
+        />
       </div>
 
       <div className="jogo__corpo">

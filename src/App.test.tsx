@@ -95,4 +95,74 @@ describe("App — som de toque nos botões grandes de navegação", () => {
 
     expect(espiaoToque).not.toHaveBeenCalled();
   });
+
+  // Fidelidade ao original: só o listener de clique de btn-sair chama
+  // somToque() antes de irParaAbertura(); o auto-retorno da tela de
+  // resultado (25s sem toque) chama irParaAbertura() puro, sem som. Se o
+  // timeout de auto-retorno tocar som, o totem beepa sozinho para um
+  // estande vazio a cada rodada, dezenas/centenas de vezes por dia.
+  it("não toca som de toque no auto-retorno silencioso da tela de resultado, sem toque do usuário", () => {
+    const espiaoToque = vi.spyOn(sons, "toque").mockImplementation(() => {});
+    render(<App />);
+
+    fireEvent.click(screen.getByRole("button", { name: /toque para começar/i }));
+    for (let i = 0; i < 5; i++) {
+      const botoes = screen.getAllByRole("button").filter((b) => b.className.includes("alt"));
+      act(() => {
+        fireEvent.click(botoes[0]);
+      });
+      act(() => {
+        vi.advanceTimersByTime(2000);
+      });
+    }
+    expect(screen.getByText("100")).toBeInTheDocument();
+
+    // zera as chamadas acumuladas até aqui (começar a partida e responder
+    // cada pergunta tocam "toque") para isolar só o caminho do auto-retorno.
+    espiaoToque.mockClear();
+
+    // segundosOciosoResultado da CONFIG do App = 25s; nenhum toque do
+    // usuário acontece nesse intervalo.
+    act(() => {
+      vi.advanceTimersByTime(25000);
+    });
+
+    expect(espiaoToque).not.toHaveBeenCalled();
+    expect(screen.getByRole("button", { name: /toque para começar/i })).toBeInTheDocument();
+  });
+});
+
+describe("App — painel do operador aberto por engano não trava o totem", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // O timeout de ociosidade do App retornava cedo sempre que `tela` era
+  // "abertura" e `voltarAbertura` nunca mexia em `painelAberto` — então um
+  // painel aberto por engano sobre a tela de abertura (ex.: o double-touch
+  // fantasma coberto no teste de Abertura.test.tsx) nunca fechava sozinho.
+  // Um humano precisava notar e fechar manualmente; até lá, o totem ficava
+  // fora de serviço, bloqueado atrás do painel.
+  it("fecha sozinho o painel do operador aberto sobre a tela de abertura, sem toque do usuário", () => {
+    render(<App />);
+
+    const marca = document.querySelector("[data-marca]");
+    expect(marca).not.toBeNull();
+    fireEvent.pointerDown(marca as Element);
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    expect(screen.getByText("Painel do operador")).toBeInTheDocument();
+
+    act(() => {
+      vi.advanceTimersByTime(45000);
+    });
+
+    expect(screen.queryByText("Painel do operador")).not.toBeInTheDocument();
+  });
 });

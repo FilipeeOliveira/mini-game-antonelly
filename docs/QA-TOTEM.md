@@ -36,16 +36,18 @@ divergência para quem for revisar antes do evento.
 
 ## 2. Desvios conhecidos do protótipo original (decisões já tomadas — confirmar que não parecem bug)
 
-- [ ] **Barra de tempo não é animada.** No original (`iniciarCronometro`
-      em `legacy/mini-game-antonelly.html`), a barra encolhe de 100% a
-      0% ao longo dos 25s de cada pergunta e fica vermelha nos últimos
-      6s. A versão React renderiza a barra estática (sem animação de
-      encolhimento). **O timeout da pergunta continua funcionando
-      normalmente** — só a representação visual do tempo passando é que
-      não anima. Isso foi uma decisão de escopo sancionada (a animação
-      fica para um plano futuro de polimento). QA: confirmar que a
-      barra estática não parece quebrada ou enganosa para quem está
-      jogando (ex.: não dar a impressão de que o cronômetro travou).
+- [ ] **Barra de tempo volta a ser animada (fix aplicado — item deixou
+      de ser um desvio conhecido).** A barra encolhe de 100% a 0% ao
+      longo dos `segundosPorPergunta` (via `animation` CSS em
+      `.tempo__barra`, reiniciada a cada pergunta) e ganha a classe
+      vermelha `tempo__barra--curta` nos últimos 6s, fiel ao
+      `iniciarCronometro` do original. Ela congela (não continua
+      drenando) assim que o jogador responde, durante a pausa de
+      feedback. QA: confirmar visualmente o encolhimento e a mudança de
+      cor no hardware real; confirmar também que, com
+      "Reduzir movimento" ativado no SO, a barra fica estática (o
+      `@media (prefers-reduced-motion: reduce)` do `theme.css`
+      neutraliza a animação de propósito — isso é esperado, não é bug).
 - [ ] **Painel do operador só abre pela tela de abertura** (toque longo
       de 2s no logo). No original, o toque longo funcionava nas três
       telas (abertura, jogo, resultado). Na versão React, só funciona na
@@ -114,30 +116,36 @@ performance, etc.), com a data e o nome de quem testou.
    (pendrive, rede local, etc.). Não é necessário copiar `node_modules`
    nem o restante do repositório — só o conteúdo de `dist/`.
 
-3. **Recomendado: servir `dist/` com um servidor estático local**, em
-   vez de abrir `dist/index.html` direto via `file://`.
+3. **Obrigatório: servir `dist/` com um servidor estático local.**
+   Abrir `dist/index.html` direto via `file://` **não é uma opção
+   degradada — não funciona, ponto**: a tela fica em branco.
 
-   **O que foi verificado:** o build usa `base: "./"` (ajustado na
-   Task 12), então o `index.html`, o CSS e o JS do bundle referenciam
-   os assets com caminho relativo (`./assets/...`). O logo da Antonelly
-   também foi corrigido (fix round 1 da Task 12): antes ele era
-   referenciado em `src/screens/Abertura.tsx` por um caminho absoluto
-   hardcoded (`/antonelly-logo.svg`, servido da pasta `public/`), o que
-   quebrava sob `file://` puro. Agora o logo mora em
-   `src/assets/antonelly-logo.svg` e é importado como módulo
-   (`import logoAntonelly from "@/assets/antonelly-logo.svg"`) — o Vite
-   emite um arquivo com hash em `dist/assets/` e resolve a URL em
-   runtime via `new URL(..., import.meta.url)`, que funciona tanto sob
-   `file://` quanto atrás de um servidor. Verificado manualmente
-   (resolução de URL simulada + checagem de que o arquivo existe no
-   caminho resolvido) — ver relatório da Task 12 para o comando exato.
+   **Por quê:** o `index.html` gerado carrega o bundle como
+   `<script type="module" crossorigin src="./assets/index-….js">`
+   (confirme com `cat dist/index.html` após o build — o `type="module"`
+   e o `crossorigin` estão sempre lá, é como o Vite emite o entrypoint).
+   Scripts de módulo ES são sempre buscados em modo CORS pelo
+   navegador, e um documento aberto via `file://` tem origem `null` —
+   o Chrome recusa a requisição antes mesmo de tentar ler o arquivo
+   (erro típico no console: "Cross origin requests are only supported
+   for protocol schemes: http, data, chrome, chrome-extension, ...").
+   O `<link rel="stylesheet" crossorigin>` do CSS do bundle tem o mesmo
+   problema. Ou seja, sob `file://` tanto o JS quanto o CSS falham ao
+   carregar: o React nunca monta, a `<div id="root">` fica vazia, e não
+   sobra estilo nenhum aplicado — não é "funciona mas sem wake lock", é
+   uma tela em branco, sem nenhum conteúdo visível.
 
-   Ainda assim, o servidor estático local continua sendo o caminho
-   **recomendado** para o totem, não porque o logo quebre mais (não
-   quebra), mas porque a Wake Lock API exige contexto seguro
-   (`https://` ou `http://localhost`) — algo que `file://` nunca
-   satisfaz, independente do logo. Ou seja: `file://` deve funcionar
-   visualmente agora, mas ainda vai perder o wake lock.
+   Isto não tem relação com o fix do logo (Task 12, round 1): o logo
+   hoje é importado como módulo e resolve certo tanto sob `file://`
+   quanto atrás de um servidor — mas isso é irrelevante se o próprio
+   script do bundle nunca chega a rodar. Não gaste tempo debugando o
+   logo se a tela estiver em branco sob `file://`: é o CORS do
+   `<script type="module">`, não o asset.
+
+   Por isso o servidor estático local não é uma recomendação — é o
+   único caminho que funciona. Ele também resolve a Wake Lock API, que
+   exige contexto seguro (`https://` ou `http://localhost`) e nunca
+   funcionaria sob `file://` de qualquer forma.
 
    ```bash
    # na máquina Windows, dentro da pasta dist/

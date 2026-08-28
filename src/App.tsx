@@ -124,10 +124,27 @@ export function App() {
   }, []);
 
   // timeout de ociosidade: volta pra abertura sem toque na tela
+  //
+  // Também cobre o painel do operador quando ele fica aberto por engano
+  // sobre a própria tela de abertura (ex.: dois dedos pousando e soltando
+  // cedo na marca — ver fix em Abertura.tsx). Sem isto, um painel aberto por
+  // acidente nunca fecharia sozinho: `tela` já é "abertura", então o ramo
+  // antigo devolvia cedo sem armar nada, e `voltarAbertura` (chamado nos
+  // outros ramos) não mexe em `painelAberto` — o totem ficaria fora de
+  // serviço, bloqueado atrás do painel, até um humano notar.
   useEffect(() => {
     function reiniciarOcioso() {
       if (ociosoRef.current) clearTimeout(ociosoRef.current);
-      if (tela === "abertura") return;
+      if (tela === "abertura" && !painelAberto) return;
+      if (tela === "abertura") {
+        // painel aberto sobre a abertura: nada de navegação de tela a
+        // fazer, só fechar o painel se ficar parado tempo demais.
+        ociosoRef.current = setTimeout(
+          () => setPainelAberto(false),
+          CONFIG.segundosOciosoJogo * 1000
+        );
+        return;
+      }
       const segundos =
         tela === "resultado" ? CONFIG.segundosOciosoResultado + 5 : CONFIG.segundosOciosoJogo;
       ociosoRef.current = setTimeout(voltarAbertura, segundos * 1000);
@@ -138,7 +155,7 @@ export function App() {
       document.removeEventListener("pointerdown", reiniciarOcioso);
       if (ociosoRef.current) clearTimeout(ociosoRef.current);
     };
-  }, [tela]);
+  }, [tela, painelAberto]);
 
   const marcasRegua: MarcaRegua[] =
     tela === "jogo"
@@ -194,6 +211,7 @@ export function App() {
           segundosAutoVolta={CONFIG.segundosOciosoResultado}
           onJogarDeNovo={jogarDeNovoComSom}
           onProximoJogador={proximoJogadorComSom}
+          onAutoVolta={voltarAbertura}
         />
       )}
 
