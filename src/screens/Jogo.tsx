@@ -40,7 +40,7 @@ export function Jogo({
   // se a guarda usasse o state, sobre a cópia de `bloqueado` congelada
   // naquela renderização específica). Na última pergunta da partida,
   // `responder` nunca chama setIndice (vai direto para onFim), então o
-  // efeito abaixo nunca reexecuta e o cronômetro nunca é cancelado — se o
+  // efeito abaixo nunca reexecuta e o cronômetro nunca é cancelado - se o
   // jogador responder perto do fim da contagem, esse setTimeout antigo
   // ainda dispara mais tarde e chama `responder` de novo, com a guarda
   // lendo aquele valor congelado em vez do valor atual (ver o teste "não
@@ -153,7 +153,7 @@ export function Jogo({
           style={{
             animationDuration: `${segundosPorPergunta}s`,
             // Congela a barra onde estiver assim que o jogador responde, em
-            // vez de continuar drenando durante a pausa de feedback — fiel
+            // vez de continuar drenando durante a pausa de feedback - fiel
             // ao original, que parava o cronômetro ao responder.
             animationPlayState: bloqueado ? "paused" : "running",
           }}

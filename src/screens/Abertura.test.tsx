@@ -43,7 +43,7 @@ describe("Abertura", () => {
   // o timer da pressão anterior. Dois dedos pousando na marca (uma tela de
   // 55" numa feira, crianças) e ambos soltando cedo: o segundo pointerdown
   // sobrescrevia a ref antes do primeiro soltar, deixando o timer do
-  // primeiro dedo órfão — ele disparava sozinho 2s depois, mesmo com os
+  // primeiro dedo órfão - ele disparava sozinho 2s depois, mesmo com os
   // dois dedos já soltos havia tempo, abrindo o painel do operador.
   it("dois toques sobrepostos, ambos soltos antes de 2s, não abrem o painel", () => {
     const onAbrirPainel = vi.fn();

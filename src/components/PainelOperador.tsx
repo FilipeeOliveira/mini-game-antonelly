@@ -31,7 +31,7 @@ export function PainelOperador({
           Partidas nesta sessão <b>{partidas}</b>
         </div>
         <div className="painel__linha">
-          Média de acerto <b>{mediaPercentual === null ? "—" : `${mediaPercentual}%`}</b>
+          Média de acerto <b>{mediaPercentual === null ? "-" : `${mediaPercentual}%`}</b>
         </div>
         <div className="painel__linha">
           Perguntas no banco <b>{tamanhoBanco}</b>

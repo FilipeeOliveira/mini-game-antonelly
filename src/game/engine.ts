@@ -42,9 +42,9 @@ export function calcularPercentual(acertos: number, total: number): number {
 export function mensagemResultado(percentual: number): string {
   if (percentual === 100) return "Cheia máxima! Você conhece o rio de ponta a ponta";
   if (percentual >= 80) return "Quase lá em cima: só faltou um palmo de água";
-  if (percentual >= 60) return "Boa navegação — o canal está aberto";
+  if (percentual >= 60) return "Boa navegação - o canal está aberto";
   if (percentual >= 40) return "Águas médias: dá para melhorar na próxima";
   if (percentual >= 25) return "Vazante. Passe no estande e a gente te conta o resto";
-  if (percentual >= 10) return "Águas rasas — mas todo mundo começa por aqui";
+  if (percentual >= 10) return "Águas rasas - mas todo mundo começa por aqui";
   return "Seca total. Bora conversar no estande?";
 }

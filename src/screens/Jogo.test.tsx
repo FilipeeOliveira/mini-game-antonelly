@@ -126,7 +126,7 @@ describe("Jogo", () => {
   // cancelado. O setTimeout do cronômetro fechou sobre a função
   // `responder` (e, se a guarda usar o state `bloqueado`, sobre o valor de
   // `bloqueado` daquela mesma renderização) de quando a pergunta apareceu
-  // pela primeira vez — nesse instante `bloqueado` ainda é `false`, seu
+  // pela primeira vez - nesse instante `bloqueado` ainda é `false`, seu
   // valor inicial, porque nenhuma resposta anterior nunca o tornou
   // `true`. Se o jogador responder bem antes do cronômetro estourar, esse
   // setTimeout antigo ainda dispara mais tarde e chama responder(-1,
@@ -137,7 +137,7 @@ describe("Jogo", () => {
   // feedback).
   //
   // Verificado manualmente: trocando a guarda de `responder` para
-  // `if (bloqueado) return;` (o state, em vez do ref) este teste falha —
+  // `if (bloqueado) return;` (o state, em vez do ref) este teste falha -
   // onFim acaba sendo chamado 2 vezes, a segunda com tempoRespostasMs de
   // comprimento 2 ([0, 10000]).
   it("não processa duas vezes a resposta de uma partida de pergunta única quando o cronômetro dispara após o jogador já ter respondido", () => {
@@ -163,9 +163,9 @@ describe("Jogo", () => {
     expect(onFim).toHaveBeenCalledTimes(1);
 
     // Deixa o cronômetro estourar (mais 9900ms, totalizando 10s desde que
-    // a pergunta foi renderizada) e, em seguida, avança mais 200ms — além
+    // a pergunta foi renderizada) e, em seguida, avança mais 200ms - além
     // do próprio msFeedbackErrado do segundo `responder(-1, false, true)`
-    // que a guarda quebrada deixaria passar — para dar tempo do segundo
+    // que a guarda quebrada deixaria passar - para dar tempo do segundo
     // onFim (se a guarda estiver quebrada) também disparar. Com a guarda
     // correta, nada disso deve acontecer: a guarda já devia estar travada
     // antes do cronômetro estourar.
@@ -180,20 +180,20 @@ describe("Jogo", () => {
   // Limpeza do timer de avanço/fim pós-feedback (equivalente a `avancar`
   // no HTML original, cancelado por `limparTemporizadores()` quando
   // `irParaAbertura()` abandona a rodada). Se <Jogo> desmontar enquanto o
-  // atraso de feedback ainda está em curso — por exemplo, por causa do
-  // timeout ocioso de 45s que a Task 11 porta para o App — esse setTimeout
+  // atraso de feedback ainda está em curso - por exemplo, por causa do
+  // timeout ocioso de 45s que a Task 11 porta para o App - esse setTimeout
   // não pode sobreviver ao desmonte: se sobreviver, ele chama onFim depois
   // que o app já navegou para outra tela, uma transição fantasma.
   //
   // Verificado manualmente: removendo a limpeza do useEffect de
   // desmontagem em Jogo.tsx (deixando o setTimeout de `responder`
-  // solto, sem ref/clearTimeout) este teste falha — onFim é chamado depois
+  // solto, sem ref/clearTimeout) este teste falha - onFim é chamado depois
   // do unmount.
   it("cancela o timer de avanço pós-feedback ao desmontar, sem chamar onFim depois", () => {
     const onFim = vi.fn();
     // Pergunta única: o timer de avanço agendado por `responder` teria como
     // alvo o próprio `onFim` (por ser a última pergunta da partida), não um
-    // `setIndice` — exercitando exatamente o caminho que a limpeza precisa
+    // `setIndice` - exercitando exatamente o caminho que a limpeza precisa
     // impedir de disparar após o desmonte.
     const umaPergunta = [itemDeTeste("Pergunta única", 0)];
     const { unmount } = render(
@@ -216,10 +216,10 @@ describe("Jogo", () => {
 
   // ---------------------------------------------------------------------
   // Barra de tempo (fix: a versão React renderizava a barra sempre em
-  // width:100%, sem nenhuma indicação visual do tempo passando — o jogador
+  // width:100%, sem nenhuma indicação visual do tempo passando - o jogador
   // via "Tempo esgotado" sem aviso algum, numa pergunta que parecia ter
   // tempo de sobra). A barra volta a encolher via animação CSS
-  // (transform: scaleX), com a duração/estado aplicados via inline style —
+  // (transform: scaleX), com a duração/estado aplicados via inline style -
   // é isso que os testes abaixo verificam, sem tentar observar a animação
   // CSS em si dentro do jsdom.
   describe("barra de tempo", () => {

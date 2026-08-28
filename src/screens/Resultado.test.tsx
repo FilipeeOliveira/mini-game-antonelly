@@ -45,12 +45,12 @@ describe("Resultado", () => {
   });
 
   // Nota: este teste testava originalmente "chama onProximoJogador
-  // automaticamente após segundosAutoVolta" — mas essa era exatamente a
+  // automaticamente após segundosAutoVolta" - mas essa era exatamente a
   // causa do beep fantasma (fix da Task de revisão final): App.tsx
   // encadeia onProximoJogador ao som de toque para o botão, e o timeout de
   // auto-retorno chamava esse mesmo prop, tocando som sozinho a cada
   // rodada. O fix separa os dois caminhos com um prop novo, onAutoVolta,
-  // dedicado ao timeout — o teste foi atualizado para verificar o
+  // dedicado ao timeout - o teste foi atualizado para verificar o
   // caminho correto (autorizado pelo carve-out de interface da própria
   // spec do fix), mantendo a cobertura de que o auto-retorno dispara e,
   // adicionalmente, travando que ele NÃO chama mais onProximoJogador.

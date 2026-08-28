@@ -65,10 +65,10 @@ describe("mensagemResultado", () => {
   it.each([
     [100, "Cheia máxima! Você conhece o rio de ponta a ponta"],
     [80, "Quase lá em cima: só faltou um palmo de água"],
-    [60, "Boa navegação — o canal está aberto"],
+    [60, "Boa navegação - o canal está aberto"],
     [40, "Águas médias: dá para melhorar na próxima"],
     [33, "Vazante. Passe no estande e a gente te conta o resto"],
-    [17, "Águas rasas — mas todo mundo começa por aqui"],
+    [17, "Águas rasas - mas todo mundo começa por aqui"],
     [0, "Seca total. Bora conversar no estande?"],
   ])("percentual=%i -> mensagem certa", (pct, esperado) => {
     expect(mensagemResultado(pct)).toBe(esperado);

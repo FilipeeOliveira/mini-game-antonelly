@@ -10,11 +10,11 @@ type ResultadoProps = {
   onProximoJogador: () => void;
   // Caminho silencioso do retorno automático (25s sem toque). Deliberadamente
   // separado de onProximoJogador: esse último é acionado só pelo clique no
-  // botão "Próximo jogador" e, em App.tsx, está encadeado ao som de toque —
+  // botão "Próximo jogador" e, em App.tsx, está encadeado ao som de toque -
   // fiel ao original, onde apenas o listener de clique de btn-sair chama
   // somToque(), e o auto-retorno (irParaAbertura() puro) nunca toca som. Se
   // o timeout abaixo chamasse onProximoJogador, o totem beeparia sozinho a
-  // cada rodada, 25s depois do último jogador sair — com o estande vazio.
+  // cada rodada, 25s depois do último jogador sair - com o estande vazio.
   onAutoVolta: () => void;
 };
 

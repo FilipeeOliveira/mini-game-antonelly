@@ -1,10 +1,10 @@
-# Fundação e Migração para React — Implementation Plan
+# Fundação e Migração para React - Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Migrar o minigame "Desafio do Rio" do arquivo HTML único atual para
-uma base React + Vite + TypeScript com paridade de funcionalidade — mesmo
-conteúdo, mesmo fluxo, mesma identidade visual — pronta para receber o
+uma base React + Vite + TypeScript com paridade de funcionalidade - mesmo
+conteúdo, mesmo fluxo, mesma identidade visual - pronta para receber o
 sistema de ranking (próximo plano) e o polimento de animação/UX (plano
 seguinte).
 
@@ -25,11 +25,11 @@ Archivo/Space Mono auto-hospedadas via `@fontsource`.
 ## Global Constraints
 
 - **Offline-first:** nenhuma dependência de rede em runtime (sem CDN de
-  fontes ou bibliotecas) — tudo embutido no build.
+  fontes ou bibliotecas) - tudo embutido no build.
 - **Conteúdo intocado:** as 30 perguntas, seus textos e a regra de
   pontuação em porcentagem (`acertos/total`) não mudam nesta migração.
 - **Responsivo por aspect-ratio:** manter `clamp()`/`vmin` + media query por
-  `aspect-ratio` (não largura fixa) — precisa funcionar em paisagem e
+  `aspect-ratio` (não largura fixa) - precisa funcionar em paisagem e
   retrato.
 - **`prefers-reduced-motion` respeitado** em toda animação portada.
 - **Sem dependências fora do combinado na spec** (Seção 5): React, Vite,
@@ -47,12 +47,12 @@ Archivo/Space Mono auto-hospedadas via `@fontsource`.
   `src/App.tsx`, `src/App.test.tsx`, `src/index.css`, `src/test/setup.ts`
 
 **Interfaces:**
-- Produces: `App` (componente React default de `src/App.tsx`, sem props) —
+- Produces: `App` (componente React default de `src/App.tsx`, sem props) -
   será totalmente substituído na Task 11, mas precisa existir e renderizar
   algo real agora para provar que o pipeline (dev/build/test) funciona.
 
 - [ ] **Step 1: Atualizar `package.json`** (o arquivo já existe com
-  `{"devDependencies": {"shadcn": "^4.19.0"}}` — preservar essa linha)
+  `{"devDependencies": {"shadcn": "^4.19.0"}}` - preservar essa linha)
 
 ```json
 {
@@ -197,7 +197,7 @@ export default defineConfig({
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
     />
-    <title>Desafio do Rio — Antonelly Construções</title>
+    <title>Desafio do Rio - Antonelly Construções</title>
   </head>
   <body>
     <div id="root"></div>
@@ -247,7 +247,7 @@ describe("App (fundação)", () => {
 ```
 
 Run: `npm test`
-Expected: FAIL — `./App` não existe ainda.
+Expected: FAIL - `./App` não existe ainda.
 
 - [ ] **Step 5: Criar o `App.tsx` mínimo**
 
@@ -369,7 +369,7 @@ describe("BANCO_PERGUNTAS", () => {
 ```
 
 Run: `npm test -- perguntas`
-Expected: FAIL — `./perguntas` não existe ainda.
+Expected: FAIL - `./perguntas` não existe ainda.
 
 - [ ] **Step 3: Escrever `src/data/perguntas.ts`** com as 30 perguntas,
   transcritas do `BANCO` em `mini-game-antonelly.html` (linhas 415-579 do
@@ -721,10 +721,10 @@ describe("mensagemResultado", () => {
   it.each([
     [100, "Cheia máxima! Você conhece o rio de ponta a ponta"],
     [80, "Quase lá em cima: só faltou um palmo de água"],
-    [60, "Boa navegação — o canal está aberto"],
+    [60, "Boa navegação - o canal está aberto"],
     [40, "Águas médias: dá para melhorar na próxima"],
     [20, "Vazante. Passe no estande e a gente te conta o resto"],
-    [0, "Seca total — mas todo mundo começa por aqui"],
+    [0, "Seca total - mas todo mundo começa por aqui"],
   ])("percentual=%i -> mensagem certa", (pct, esperado) => {
     expect(mensagemResultado(pct)).toBe(esperado);
   });
@@ -732,7 +732,7 @@ describe("mensagemResultado", () => {
 ```
 
 Run: `npm test -- engine`
-Expected: FAIL — `./engine` não existe ainda.
+Expected: FAIL - `./engine` não existe ainda.
 
 - [ ] **Step 2: Escrever `src/game/engine.ts`**
 
@@ -781,10 +781,10 @@ export function calcularPercentual(acertos: number, total: number): number {
 export function mensagemResultado(percentual: number): string {
   if (percentual === 100) return "Cheia máxima! Você conhece o rio de ponta a ponta";
   if (percentual >= 80) return "Quase lá em cima: só faltou um palmo de água";
-  if (percentual >= 60) return "Boa navegação — o canal está aberto";
+  if (percentual >= 60) return "Boa navegação - o canal está aberto";
   if (percentual >= 40) return "Águas médias: dá para melhorar na próxima";
   if (percentual >= 20) return "Vazante. Passe no estande e a gente te conta o resto";
-  return "Seca total — mas todo mundo começa por aqui";
+  return "Seca total - mas todo mundo começa por aqui";
 }
 ```
 
@@ -871,7 +871,7 @@ describe("sons", () => {
 ```
 
 Run: `npm test -- audio`
-Expected: FAIL — `./audio` não existe ainda.
+Expected: FAIL - `./audio` não existe ainda.
 
 - [ ] **Step 2: Escrever `src/game/audio.ts`**
 
@@ -900,7 +900,7 @@ function bip(freqs: number[], duracao = 0.12, tipo: OscillatorType = "sine", vol
       osc.stop(t0 + duracao + 0.02);
     });
   } catch {
-    // som é opcional — se o navegador bloquear/não suportar AudioContext, o jogo segue sem som
+    // som é opcional - se o navegador bloquear/não suportar AudioContext, o jogo segue sem som
   }
 }
 
@@ -945,7 +945,7 @@ git commit -m "feat: efeitos sonoros via Web Audio"
 npm install @fontsource-variable/archivo @fontsource/space-mono
 ```
 
-- [ ] **Step 2: Criar `src/theme.css`** — portado quase literal do
+- [ ] **Step 2: Criar `src/theme.css`** - portado quase literal do
   `<style>` do `mini-game-antonelly.html` original (linhas 18-319), com os
   tokens de verde de marca já ajustados (`--verde`, `--marca*`) para os
   valores validados na sessão anterior:
@@ -1585,7 +1585,7 @@ describe("RioNivel", () => {
 ```
 
 Run: `npm test -- RioNivel`
-Expected: FAIL — `./RioNivel` não existe ainda.
+Expected: FAIL - `./RioNivel` não existe ainda.
 
 - [ ] **Step 2: Escrever `src/components/RioNivel.tsx`**
 
@@ -1705,7 +1705,7 @@ describe("Abertura", () => {
 ```
 
 Run: `npm test -- Abertura`
-Expected: FAIL — `./Abertura` não existe ainda.
+Expected: FAIL - `./Abertura` não existe ainda.
 
 - [ ] **Step 3: Escrever `src/screens/Abertura.tsx`**
 
@@ -1778,7 +1778,7 @@ git commit -m "feat: tela de abertura com logo real e toque longo pro painel"
 **Interfaces:**
 - Consumes: `ItemPartida`, `ResultadoPartida` de `@/game/types` (Task 2)
 - Produces: `<Jogo itens={ItemPartida[]} segundosPorPergunta={number} msFeedbackCerto={number} msFeedbackErrado={number} mostrarFato={boolean} onTocar={(som: "toque"|"certo"|"errado") => void} onProgresso={(indiceAtual: number) => void} onFim={(resultado: ResultadoPartida) => void} />`
-  — `onProgresso` é chamado com o número de perguntas já respondidas assim
+  - `onProgresso` é chamado com o número de perguntas já respondidas assim
   que o veredito de cada resposta é definido (usado pela Task 11 para
   atualizar o `RioNivel` em tempo real, do mesmo jeito que o
   `atualizarRegua` do HTML original).
@@ -1915,7 +1915,7 @@ describe("Jogo", () => {
 ```
 
 Run: `npm test -- Jogo`
-Expected: FAIL — `./Jogo` não existe ainda.
+Expected: FAIL - `./Jogo` não existe ainda.
 
 - [ ] **Step 2: Escrever `src/screens/Jogo.tsx`**
 
@@ -2072,7 +2072,7 @@ export function Jogo({
 ```
 
 > Nota: a barra de tempo visual (encolher em `segundosPorPergunta` segundos e
-> ficar vermelha nos últimos 6s) é intencionalmente simplificada aqui — ela
+> ficar vermelha nos últimos 6s) é intencionalmente simplificada aqui - ela
 > não afeta o resultado do jogo. Portar sua animação exata via CSS
 > transition + classe `tempo__barra--curta` fica no checklist manual da
 > Task 12.
@@ -2157,7 +2157,7 @@ describe("Resultado", () => {
 ```
 
 Run: `npm test -- Resultado`
-Expected: FAIL — `./Resultado` não existe ainda.
+Expected: FAIL - `./Resultado` não existe ainda.
 
 - [ ] **Step 2: Escrever `src/screens/Resultado.tsx`**
 
@@ -2291,7 +2291,7 @@ describe("PainelOperador", () => {
 
   it("mostra travessão quando não há média ainda", () => {
     render(<PainelOperador {...propsPadrao()} mediaPercentual={null} />);
-    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.getByText("-")).toBeInTheDocument();
   });
 
   it("cada botão chama seu callback", () => {
@@ -2310,7 +2310,7 @@ describe("PainelOperador", () => {
 ```
 
 Run: `npm test -- PainelOperador`
-Expected: FAIL — `./PainelOperador` não existe ainda.
+Expected: FAIL - `./PainelOperador` não existe ainda.
 
 - [ ] **Step 2: Escrever `src/components/PainelOperador.tsx`**
 
@@ -2348,7 +2348,7 @@ export function PainelOperador({
           Partidas nesta sessão <b>{partidas}</b>
         </div>
         <div className="painel__linha">
-          Média de acerto <b>{mediaPercentual === null ? "—" : `${mediaPercentual}%`}</b>
+          Média de acerto <b>{mediaPercentual === null ? "-" : `${mediaPercentual}%`}</b>
         </div>
         <div className="painel__linha">
           Perguntas no banco <b>{tamanhoBanco}</b>
@@ -2390,7 +2390,7 @@ git commit -m "feat: painel do operador"
 
 ---
 
-## Task 11: `App.tsx` — orquestração e comportamentos de quiosque
+## Task 11: `App.tsx` - orquestração e comportamentos de quiosque
 
 **Files:**
 - Modify: `src/App.tsx` (substitui inteiramente a versão mínima da Task 1),
@@ -2410,7 +2410,7 @@ import { render, screen, fireEvent, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { App } from "./App";
 
-describe("App — partida completa", () => {
+describe("App - partida completa", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     // random = 0.999999 faz o embaralhamento (Fisher-Yates) virar identidade:
@@ -2465,7 +2465,7 @@ describe("App — partida completa", () => {
 ```
 
 Run: `npm test -- App`
-Expected: FAIL — o `App` da Task 1 só renderiza `<p>Desafio do Rio</p>`, não
+Expected: FAIL - o `App` da Task 1 só renderiza `<p>Desafio do Rio</p>`, não
 tem fluxo de jogo.
 
 - [ ] **Step 2: Reescrever `src/App.tsx` por completo**
@@ -2564,7 +2564,7 @@ export function App() {
           wakeLock = await navigator.wakeLock.request("screen");
         }
       } catch {
-        // wake lock é best-effort — pode não estar disponível no navegador/contexto
+        // wake lock é best-effort - pode não estar disponível no navegador/contexto
       }
     }
     function aoVisivel() {
@@ -2683,7 +2683,7 @@ export function App() {
 - [ ] **Step 3: Rodar os testes e confirmar que passam**
 
 Run: `npm test`
-Expected: PASS — todos os testes de todas as tasks anteriores continuam
+Expected: PASS - todos os testes de todas as tasks anteriores continuam
 passando, mais os 2 novos testes de integração do `App`.
 
 - [ ] **Step 4: Commit**
@@ -2709,13 +2709,13 @@ Expected: sucesso, gera `dist/`
 - [ ] **Step 2: Confirmar que o build não depende de nenhum CDN externo**
 
 Run: `grep -rE "fonts\.googleapis|fonts\.gstatic|cdn\." dist/`
-Expected: nenhum resultado — todo asset (fontes, JS, CSS) está em `dist/`,
+Expected: nenhum resultado - todo asset (fontes, JS, CSS) está em `dist/`,
 sem `<link>`/`@import` externo.
 
 - [ ] **Step 3: Rodar a suíte completa uma última vez**
 
 Run: `npm test`
-Expected: PASS — todos os testes de todas as tasks
+Expected: PASS - todos os testes de todas as tasks
 
 - [ ] **Step 4: Arquivar o HTML original como referência**
 
@@ -2726,7 +2726,7 @@ git add legacy/
 git commit -m "chore: arquiva o protótipo HTML único como referência (legacy/)"
 ```
 
-- [ ] **Step 5: QA manual no navegador** (não automatizável — requer olhos
+- [ ] **Step 5: QA manual no navegador** (não automatizável - requer olhos
   humanos e/ou um agente com acesso a browser)
 
 Rodar `npm run dev`, abrir no navegador, e conferir contra o comportamento
@@ -2743,15 +2743,15 @@ do `legacy/mini-game-antonelly.html`:
 - [ ] Tela de resultado mostra a % correta, a mensagem certa pro faixa de
       pontuação, e volta sozinha pra abertura após 25s
 - [ ] "Jogar de novo" e "Próximo jogador" funcionam
-- [ ] Testar em janela estreita (retrato) e larga (paisagem) — grid de
+- [ ] Testar em janela estreita (retrato) e larga (paisagem) - grid de
       alternativas muda de 1 para 2 colunas
-- [ ] Comparar a barra de tempo (`tempo__barra`) com o original — no HTML
+- [ ] Comparar a barra de tempo (`tempo__barra`) com o original - no HTML
       legado ela encolhe de 100% a 0% ao longo de `segundosPorPergunta` e
       fica vermelha nos últimos 6s (ver `iniciarCronometro` em
       `legacy/mini-game-antonelly.html`); se a versão React não replicar
       isso ainda (Task 8 simplificou essa parte), anotar como item pendente
       pro plano de animação
-- [ ] Tela cheia (botão do painel) e wake lock — funcionam melhor num
+- [ ] Tela cheia (botão do painel) e wake lock - funcionam melhor num
       dispositivo/touch real; anotar qualquer limitação observada
 
 - [ ] **Step 6: Commit final (se algo foi ajustado na QA manual)**
@@ -2776,8 +2776,8 @@ git commit -m "fix: ajustes de paridade visual encontrados na QA manual"
 - UX responsiva por aspect-ratio (Seção 4): ✅ portado em `theme.css`
   (Task 5), verificado manualmente na Task 12
 - Bibliotecas da Seção 5 (React, Vite, TS, Tailwind, shadcn, lucide não usado
-  ainda — entra quando algum componente novo precisar de ícone): ✅ Task 1
-- Ranking, Motion, confete, combo: **fora de escopo deste plano** — ver
+  ainda - entra quando algum componente novo precisar de ícone): ✅ Task 1
+- Ranking, Motion, confete, combo: **fora de escopo deste plano** - ver
   Seções 2 e 3 da spec, cobertas pelos próximos dois planos
   (`ranking-e-persistencia` e `animacao-e-polimento-totem`, a escrever após
   este plano ser executado e revisado)

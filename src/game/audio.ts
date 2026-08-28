@@ -22,7 +22,7 @@ function bip(freqs: number[], duracao = 0.12, tipo: OscillatorType = "sine", vol
       osc.stop(t0 + duracao + 0.02);
     });
   } catch {
-    // som é opcional — se o navegador bloquear/não suportar AudioContext, o jogo segue sem som
+    // som é opcional - se o navegador bloquear/não suportar AudioContext, o jogo segue sem som
   }
 }
 

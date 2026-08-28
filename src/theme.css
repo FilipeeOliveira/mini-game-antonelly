@@ -230,7 +230,7 @@ body {
   background: linear-gradient(90deg, #c0392b, var(--vermelho));
 }
 /* Encolhe a barra de 100% a 0% (via transform, não width, para não forçar
-   layout) ao longo de segundosPorPergunta — ver Jogo.tsx, que aplica a
+   layout) ao longo de segundosPorPergunta - ver Jogo.tsx, que aplica a
    duração via animationDuration inline e reinicia a animação a cada
    pergunta remontando o elemento (key={indice}). Pausada (animationPlayState)
    assim que o jogador responde, para não continuar drenando durante a pausa
@@ -346,7 +346,7 @@ body {
 @media (min-aspect-ratio: 1/1) {
   /* Em paisagem as 3 alternativas ficam empilhadas (2 colunas deixariam uma
      órfã), então a largura é limitada para a linha não ficar longa demais
-     num 55" — sem deixar metade da tela vazia. */
+     num 55" - sem deixar metade da tela vazia. */
   .alternativas {
     max-width: clamp(600px, 70vw, 1500px);
   }

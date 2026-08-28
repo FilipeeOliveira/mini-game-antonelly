@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Desafio do Rio — Antonelly Construções</title>
+<title>Desafio do Rio - Antonelly Construções</title>
 
 <!--
   ATENÇÃO PARA O TOTEM: as fontes abaixo vêm do Google Fonts.
@@ -16,7 +16,7 @@
 
 <style>
 /* ============================================================
-   PALETA — Encontro das Águas
+   PALETA - Encontro das Águas
    negro/água   = Rio Negro         solimões = sedimento do Solimões
    ============================================================ */
 :root{
@@ -31,7 +31,7 @@
   --verde:      #2FA84F;
   --vermelho:   #E04A31;
 
-  /* verde da marca Antonelly — extraído do logo oficial, usado nos pontos de ação/marca */
+  /* verde da marca Antonelly - extraído do logo oficial, usado nos pontos de ação/marca */
   --marca:      #2FA84F;
   --marca-2:    #268F42;
   --marca-rgb:  47,168,79;
@@ -67,7 +67,7 @@ body{
 
 /* ---------- O RIO: elemento-assinatura ----------
    O nível da água sobe conforme a partida avança e, no final,
-   para na altura da nota — como a régua de cota do porto.      */
+   para na altura da nota - como a régua de cota do porto.      */
 .rio{
   position:fixed; left:0; right:0; bottom:0;
   height:var(--nivel);
@@ -246,7 +246,7 @@ body{
 .alt--apagada{ opacity:.34; }
 .alt[disabled]{ cursor:default; }
 
-/* faixa de veredito — altura reservada, sem pulo de layout */
+/* faixa de veredito - altura reservada, sem pulo de layout */
 .veredito{
   min-height:clamp(78px,11vmin,120px);
   display:flex; flex-direction:column; justify-content:center; gap:6px;
@@ -338,7 +338,7 @@ body{
 </div>
 <div class="regua" id="regua" aria-hidden="true"></div>
 
-<!-- ====== TELA 1 — ABERTURA ====== -->
+<!-- ====== TELA 1 - ABERTURA ====== -->
 <section class="tela abertura tela--ativa" id="tela-abertura">
   <div class="marca marca--logo" data-marca>
     <img class="marca__logo" src="antonelly-logo.svg" alt="Antonelly Construções">
@@ -350,7 +350,7 @@ body{
   <p class="rodape-abertura">Menos de 2 minutos · toque na tela</p>
 </section>
 
-<!-- ====== TELA 2 — JOGO ====== -->
+<!-- ====== TELA 2 - JOGO ====== -->
 <section class="tela" id="tela-jogo">
   <header class="topo">
     <div class="marca" data-marca>Desafio do Rio</div>
@@ -359,7 +359,7 @@ body{
   <div class="tempo"><div class="tempo__barra" id="barra-tempo"></div></div>
 
   <div class="jogo__corpo">
-    <h2 class="pergunta" id="texto-pergunta">—</h2>
+    <h2 class="pergunta" id="texto-pergunta">-</h2>
     <div class="alternativas" id="alternativas"></div>
   </div>
 
@@ -369,13 +369,13 @@ body{
   </div>
 </section>
 
-<!-- ====== TELA 3 — RESULTADO ====== -->
+<!-- ====== TELA 3 - RESULTADO ====== -->
 <section class="tela resultado" id="tela-resultado">
   <div class="marca" data-marca>Desafio do Rio</div>
   <p class="olho" style="margin-top:auto">Sua cota</p>
   <p class="nota" id="nota">0<sup>%</sup></p>
-  <h2 class="veredito-final" id="titulo-final">—</h2>
-  <p class="acertos" id="acertos">—</p>
+  <h2 class="veredito-final" id="titulo-final">-</h2>
+  <p class="acertos" id="acertos">-</p>
   <div class="acoes">
     <button class="botao botao--primario" id="btn-denovo">Jogar de novo</button>
     <button class="botao botao--fantasma" id="btn-sair">Próximo jogador</button>
@@ -389,7 +389,7 @@ body{
   <div class="painel__caixa">
     <h2>Painel do operador</h2>
     <div class="painel__linha">Partidas nesta sessão <b id="p-partidas">0</b></div>
-    <div class="painel__linha">Média de acerto <b id="p-media">—</b></div>
+    <div class="painel__linha">Média de acerto <b id="p-media">-</b></div>
     <div class="painel__linha">Perguntas no banco <b id="p-banco">0</b></div>
     <div class="painel__botoes">
       <button class="mini" id="p-som">Som: ligado</button>
@@ -405,7 +405,7 @@ body{
 
 <script>
 /* =========================================================================
-   CONFIGURAÇÃO — ajuste tudo por aqui, sem mexer no resto do código
+   CONFIGURAÇÃO - ajuste tudo por aqui, sem mexer no resto do código
    ========================================================================= */
 const CONFIG = {
   perguntasPorPartida: 5,
@@ -420,7 +420,7 @@ const CONFIG = {
 };
 
 /* =========================================================================
-   BANCO DE PERGUNTAS — 30 itens
+   BANCO DE PERGUNTAS - 30 itens
    c = índice da alternativa correta (0 a 3)
    Revise os textos com a equipe da Antonelly antes da feira.
    ========================================================================= */
@@ -812,10 +812,10 @@ function mostrarResultado(){
 function mensagem(pct){
   if(pct === 100) return "Cheia máxima! Você conhece o rio de ponta a ponta";
   if(pct >= 80)   return "Quase lá em cima: só faltou um palmo de água";
-  if(pct >= 60)   return "Boa navegação — o canal está aberto";
+  if(pct >= 60)   return "Boa navegação - o canal está aberto";
   if(pct >= 40)   return "Águas médias: dá para melhorar na próxima";
   if(pct >= 20)   return "Vazante. Passe no estande e a gente te conta o resto";
-  return "Seca total — mas todo mundo começa por aqui";
+  return "Seca total - mas todo mundo começa por aqui";
 }
 
 /* ---------- temporizadores e ociosidade ---------- */
@@ -875,7 +875,7 @@ document.querySelectorAll("[data-marca]").forEach(m=>{
 function abrirPainel(){
   el("p-partidas").textContent = sessao.partidas;
   el("p-media").textContent = sessao.partidas
-    ? Math.round(sessao.somaPercentual / sessao.partidas) + "%" : "—";
+    ? Math.round(sessao.somaPercentual / sessao.partidas) + "%" : "-";
   el("p-banco").textContent = BANCO.length;
   el("p-som").textContent = "Som: " + (som ? "ligado" : "desligado");
   el("painel").classList.add("painel--aberto");

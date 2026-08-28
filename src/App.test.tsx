@@ -7,7 +7,7 @@ import { BANCO_PERGUNTAS } from "@/data/perguntas";
 // As perguntas reais têm a resposta certa em posições diferentes (A, B ou C),
 // então não dá para clicar sempre no primeiro botão. Este helper lê a pergunta
 // que está na tela, encontra-a no banco e clica na alternativa cujo texto é o
-// gabarito — independente da ordem em que ela foi sorteada.
+// gabarito - independente da ordem em que ela foi sorteada.
 function responderCorretamente() {
   const textoPergunta = document.querySelector(".pergunta")?.textContent ?? "";
   const noBanco = BANCO_PERGUNTAS.find((p) => p.pergunta === textoPergunta);
@@ -30,7 +30,7 @@ function jogarPartidaInteiraAcertandoTudo() {
   for (let i = 0; i < 6; i++) responderCorretamente();
 }
 
-describe("App — partida completa", () => {
+describe("App - partida completa", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     // random = 0.999999 faz o embaralhamento (Fisher-Yates) virar identidade:
@@ -65,7 +65,7 @@ describe("App — partida completa", () => {
   });
 });
 
-describe("App — som de toque nos botões grandes de navegação", () => {
+describe("App - som de toque nos botões grandes de navegação", () => {
   beforeEach(() => {
     vi.useFakeTimers();
     vi.spyOn(Math, "random").mockReturnValue(0.999999);
@@ -133,7 +133,7 @@ describe("App — som de toque nos botões grandes de navegação", () => {
   });
 });
 
-describe("App — painel do operador aberto por engano não trava o totem", () => {
+describe("App - painel do operador aberto por engano não trava o totem", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -143,7 +143,7 @@ describe("App — painel do operador aberto por engano não trava o totem", () =
   });
 
   // O timeout de ociosidade do App retornava cedo sempre que `tela` era
-  // "abertura" e `voltarAbertura` nunca mexia em `painelAberto` — então um
+  // "abertura" e `voltarAbertura` nunca mexia em `painelAberto` - então um
   // painel aberto por engano sobre a tela de abertura (ex.: o double-touch
   // fantasma coberto no teste de Abertura.test.tsx) nunca fechava sozinho.
   // Um humano precisava notar e fechar manualmente; até lá, o totem ficava

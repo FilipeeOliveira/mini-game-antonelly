@@ -108,7 +108,7 @@ export function App() {
           wakeLock = await navigator.wakeLock.request("screen");
         }
       } catch {
-        // wake lock é best-effort — pode não estar disponível no navegador/contexto
+        // wake lock é best-effort - pode não estar disponível no navegador/contexto
       }
     }
     function aoVisivel() {
@@ -126,10 +126,10 @@ export function App() {
   //
   // Também cobre o painel do operador quando ele fica aberto por engano
   // sobre a própria tela de abertura (ex.: dois dedos pousando e soltando
-  // cedo na marca — ver fix em Abertura.tsx). Sem isto, um painel aberto por
+  // cedo na marca - ver fix em Abertura.tsx). Sem isto, um painel aberto por
   // acidente nunca fecharia sozinho: `tela` já é "abertura", então o ramo
   // antigo devolvia cedo sem armar nada, e `voltarAbertura` (chamado nos
-  // outros ramos) não mexe em `painelAberto` — o totem ficaria fora de
+  // outros ramos) não mexe em `painelAberto` - o totem ficaria fora de
   // serviço, bloqueado atrás do painel, até um humano notar.
   useEffect(() => {
     function reiniciarOcioso() {

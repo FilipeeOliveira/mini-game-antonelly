@@ -31,7 +31,7 @@ describe("PainelOperador", () => {
 
   it("mostra travessão quando não há média ainda", () => {
     render(<PainelOperador {...propsPadrao()} mediaPercentual={null} />);
-    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.getByText("-")).toBeInTheDocument();
   });
 
   it("cada botão chama seu callback", () => {
