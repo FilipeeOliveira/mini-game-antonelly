@@ -19,7 +19,7 @@ describe("embaralhar", () => {
 function bancoFalso(tamanho: number): Pergunta[] {
   return Array.from({ length: tamanho }, (_, i) => ({
     pergunta: `Pergunta ${i}`,
-    alternativas: ["A", "B", "C"] as [string, string, string],
+    alternativas: ["A", "B", "C", "D"] as [string, string, string, string],
     correta: 0 as const,
   }));
 }
@@ -39,7 +39,7 @@ describe("sortearPerguntas", () => {
 
   it("marca certa=true só na alternativa do índice correto", () => {
     const banco: Pergunta[] = [
-      { pergunta: "P1", alternativas: ["a", "b", "c"], correta: 2 },
+      { pergunta: "P1", alternativas: ["a", "b", "c", "d"], correta: 2 },
     ];
     const { itens } = sortearPerguntas(banco, [], 1, false);
     const certas = itens[0].alternativas.filter((a) => a.certa);

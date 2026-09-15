@@ -4,7 +4,7 @@ import { Jogo } from "./Jogo";
 import type { ItemPartida } from "@/game/types";
 
 function itemDeTeste(pergunta: string, certaIdx: number): ItemPartida {
-  const textos = ["Alternativa 0", "Alternativa 1", "Alternativa 2"];
+  const textos = ["Alternativa 0", "Alternativa 1", "Alternativa 2", "Alternativa 3"];
   return {
     pergunta,
     alternativas: textos.map((texto, i) => ({ texto, certa: i === certaIdx })),
@@ -17,7 +17,7 @@ describe("Jogo", () => {
 
   const itens = [itemDeTeste("Pergunta 1", 0), itemDeTeste("Pergunta 2", 1)];
 
-  it("renderiza a primeira pergunta e suas 3 alternativas", () => {
+  it("renderiza a primeira pergunta e suas 4 alternativas", () => {
     render(
       <Jogo
         itens={itens}
@@ -28,7 +28,7 @@ describe("Jogo", () => {
       />
     );
     expect(screen.getByText("Pergunta 1")).toBeInTheDocument();
-    expect(screen.getAllByRole("button")).toHaveLength(3);
+    expect(screen.getAllByRole("button")).toHaveLength(4);
   });
 
   it("responder certo mostra 'Isso mesmo!' e desabilita as alternativas", () => {

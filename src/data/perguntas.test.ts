@@ -6,15 +6,15 @@ describe("BANCO_PERGUNTAS", () => {
     expect(BANCO_PERGUNTAS).toHaveLength(30);
   });
 
-  it("cada pergunta tem exatamente 3 alternativas", () => {
+  it("cada pergunta tem exatamente 4 alternativas", () => {
     for (const p of BANCO_PERGUNTAS) {
-      expect(p.alternativas).toHaveLength(3);
+      expect(p.alternativas).toHaveLength(4);
     }
   });
 
-  it("cada pergunta tem um índice de resposta correta válido (0-2)", () => {
+  it("cada pergunta tem um índice de resposta correta válido (0-3)", () => {
     for (const p of BANCO_PERGUNTAS) {
-      expect([0, 1, 2]).toContain(p.correta);
+      expect([0, 1, 2, 3]).toContain(p.correta);
     }
   });
 

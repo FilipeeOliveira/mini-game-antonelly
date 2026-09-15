@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ItemPartida, ResultadoPartida } from "@/game/types";
 import { calcularPercentual } from "@/game/engine";
 
-const LETRAS = ["A", "B", "C"];
+const LETRAS = ["A", "B", "C", "D"];
 // Últimos N segundos da pergunta em que a barra de tempo vira vermelha
 // (.tempo__barra--curta), fiel ao `iniciarCronometro` do original.
 const SEGUNDOS_BARRA_CURTA = 6;

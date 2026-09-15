@@ -1,7 +1,7 @@
 export type Pergunta = {
   pergunta: string;
-  alternativas: [string, string, string];
-  correta: 0 | 1 | 2;
+  alternativas: [string, string, string, string];
+  correta: 0 | 1 | 2 | 3;
 };
 
 export type Alternativa = {
