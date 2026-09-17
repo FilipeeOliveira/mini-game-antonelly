@@ -30,6 +30,16 @@ function jogarPartidaInteiraAcertandoTudo() {
   for (let i = 0; i < 6; i++) responderCorretamente();
 }
 
+// App faz preload de todos os backgrounds no boot antes de liberar "Vamos
+// começar" (ver src/App.tsx) - o stub de Image em test/setup.ts dispara
+// onload via setTimeout(0), então basta avançar os timers fake e deixar o
+// microtask do preload resolver para o botão destravar.
+async function aguardarFundosProntos() {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(0);
+  });
+}
+
 describe("App - partida completa", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -44,10 +54,11 @@ describe("App - partida completa", () => {
     vi.restoreAllMocks();
   });
 
-  it("joga uma partida inteira acertando tudo e chega a 100% no resultado", () => {
+  it("joga uma partida inteira acertando tudo e chega a 100% no resultado", async () => {
     render(<App />);
+    await aguardarFundosProntos();
 
-    fireEvent.click(screen.getByRole("button", { name: /toque para começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
     expect(screen.getByText("1")).toBeInTheDocument();
 
     jogarPartidaInteiraAcertandoTudo();
@@ -56,9 +67,11 @@ describe("App - partida completa", () => {
     expect(screen.getByText("6 de 6 perguntas certas")).toBeInTheDocument();
   });
 
-  it("'Jogar de novo' no resultado inicia uma nova partida", () => {
+  it("'Jogar de novo' no resultado inicia uma nova partida", async () => {
     render(<App />);
-    fireEvent.click(screen.getByRole("button", { name: /toque para começar/i }));
+    await aguardarFundosProntos();
+
+    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
     jogarPartidaInteiraAcertandoTudo();
     fireEvent.click(screen.getByRole("button", { name: /jogar de novo/i }));
     expect(screen.getByText("1")).toBeInTheDocument();
@@ -76,18 +89,20 @@ describe("App - som de toque nos botões grandes de navegação", () => {
     vi.restoreAllMocks();
   });
 
-  it("toca o som de toque ao tocar em 'Toque para começar' com o som ligado", () => {
+  it("toca o som de toque ao tocar em 'Vamos começar' com o som ligado", async () => {
     const espiaoToque = vi.spyOn(sons, "toque").mockImplementation(() => {});
     render(<App />);
+    await aguardarFundosProntos();
 
-    fireEvent.click(screen.getByRole("button", { name: /toque para começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
 
     expect(espiaoToque).toHaveBeenCalledTimes(1);
   });
 
-  it("não toca o som de toque ao tocar em 'Toque para começar' com o som desligado no painel", () => {
+  it("não toca o som de toque ao tocar em 'Vamos começar' com o som desligado no painel", async () => {
     const espiaoToque = vi.spyOn(sons, "toque").mockImplementation(() => {});
     render(<App />);
+    await aguardarFundosProntos();
 
     // abre o painel do operador: toque longo (2s) na marca/logo da abertura
     const marca = document.querySelector("[data-marca]");
@@ -100,7 +115,7 @@ describe("App - som de toque nos botões grandes de navegação", () => {
     fireEvent.click(screen.getByRole("button", { name: /som: ligado/i }));
     fireEvent.click(screen.getByRole("button", { name: /fechar/i }));
 
-    fireEvent.click(screen.getByRole("button", { name: /toque para começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
 
     expect(espiaoToque).not.toHaveBeenCalled();
   });
@@ -110,11 +125,12 @@ describe("App - som de toque nos botões grandes de navegação", () => {
   // resultado (25s sem toque) chama irParaAbertura() puro, sem som. Se o
   // timeout de auto-retorno tocar som, o totem beepa sozinho para um
   // estande vazio a cada rodada, dezenas/centenas de vezes por dia.
-  it("não toca som de toque no auto-retorno silencioso da tela de resultado, sem toque do usuário", () => {
+  it("não toca som de toque no auto-retorno silencioso da tela de resultado, sem toque do usuário", async () => {
     const espiaoToque = vi.spyOn(sons, "toque").mockImplementation(() => {});
     render(<App />);
+    await aguardarFundosProntos();
 
-    fireEvent.click(screen.getByRole("button", { name: /toque para começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
     jogarPartidaInteiraAcertandoTudo();
     expect(screen.getByText("100")).toBeInTheDocument();
 
@@ -129,7 +145,7 @@ describe("App - som de toque nos botões grandes de navegação", () => {
     });
 
     expect(espiaoToque).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: /toque para começar/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /vamos começar/i })).toBeInTheDocument();
   });
 });
 
@@ -148,8 +164,9 @@ describe("App - painel do operador aberto por engano não trava o totem", () => 
   // fantasma coberto no teste de Abertura.test.tsx) nunca fechava sozinho.
   // Um humano precisava notar e fechar manualmente; até lá, o totem ficava
   // fora de serviço, bloqueado atrás do painel.
-  it("fecha sozinho o painel do operador aberto sobre a tela de abertura, sem toque do usuário", () => {
+  it("fecha sozinho o painel do operador aberto sobre a tela de abertura, sem toque do usuário", async () => {
     render(<App />);
+    await aguardarFundosProntos();
 
     const marca = document.querySelector("[data-marca]");
     expect(marca).not.toBeNull();

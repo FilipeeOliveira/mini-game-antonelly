@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BANCO_PERGUNTAS } from "@/data/perguntas";
-import { sortearPerguntas, mensagemResultado } from "@/game/engine";
+import { sortearPerguntas, mensagemResultado, embaralhar } from "@/game/engine";
 import type { ItemPartida, ResultadoPartida } from "@/game/types";
 import { sons } from "@/game/audio";
-import { RioNivel, type MarcaRegua } from "@/components/RioNivel";
+import { preloadImagens } from "@/game/preloadImagens";
+import { TODOS_FUNDOS, FUNDOS_PERGUNTA, FUNDO_RESULTADO } from "@/config/backgrounds";
 import { PainelOperador } from "@/components/PainelOperador";
+import { Canvas1080 } from "@/components/Canvas1080";
 import { Abertura } from "@/screens/Abertura";
 import { Jogo } from "@/screens/Jogo";
 import { Resultado } from "@/screens/Resultado";
@@ -24,14 +26,28 @@ type Tela = "abertura" | "jogo" | "resultado";
 export function App() {
   const [tela, setTela] = useState<Tela>("abertura");
   const [itens, setItens] = useState<ItemPartida[]>([]);
+  const [fundosPerguntas, setFundosPerguntas] = useState<string[]>([]);
   const [resultado, setResultado] = useState<ResultadoPartida | null>(null);
-  const [indiceAtual, setIndiceAtual] = useState(0);
   const [painelAberto, setPainelAberto] = useState(false);
   const [somLigado, setSomLigado] = useState(true);
   const [partidas, setPartidas] = useState(0);
   const [somaPercentual, setSomaPercentual] = useState(0);
+  const [fundosProntos, setFundosProntos] = useState(false);
   const sacolaRef = useRef<number[]>([]);
   const ociosoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Preload de todos os backgrounds no boot, antes de liberar "Vamos
+  // começar" - o totem roda o dia inteiro em loop e não pode piscar branco
+  // esperando uma imagem local carregar.
+  useEffect(() => {
+    let ativo = true;
+    preloadImagens(TODOS_FUNDOS).then(() => {
+      if (ativo) setFundosProntos(true);
+    });
+    return () => {
+      ativo = false;
+    };
+  }, []);
 
   const tocar = useCallback(
     (som: keyof typeof sons) => {
@@ -50,7 +66,10 @@ export function App() {
     );
     sacolaRef.current = sacolaRestante;
     setItens(novosItens);
-    setIndiceAtual(0);
+    // Sorteia os fundos da partida sem repetição: embaralha o pool e usa os
+    // primeiros N (o pool tem o mesmo tamanho de uma partida - 6 fundos para
+    // 6 perguntas - então cada pergunta ganha um fundo diferente).
+    setFundosPerguntas(embaralhar(FUNDOS_PERGUNTA).slice(0, novosItens.length));
     setResultado(null);
     setTela("jogo");
   }
@@ -156,52 +175,27 @@ export function App() {
     };
   }, [tela, painelAberto]);
 
-  const marcasRegua: MarcaRegua[] =
-    tela === "jogo"
-      ? Array.from({ length: itens.length + 1 }, (_, i) => ({
-          valor: i,
-          rotulo: String(i).padStart(2, "0"),
-          posPercent: 8 + i * (26 / itens.length),
-          ativa: i === indiceAtual,
-        }))
-      : tela === "resultado" && resultado
-      ? [0, 25, 50, 75, 100].map((v) => ({
-          valor: v,
-          rotulo: `${v}%`,
-          posPercent: 8 + v * 0.62,
-          ativa: v === resultado.percentual,
-        }))
-      : [];
-
-  const nivelPercent =
-    tela === "jogo"
-      ? 8 + indiceAtual * (26 / Math.max(itens.length, 1))
-      : tela === "resultado" && resultado
-      ? 8 + resultado.percentual * 0.62
-      : 10;
-
   return (
-    <>
-      <RioNivel nivelPercent={nivelPercent} marcas={marcasRegua} />
-
+    <Canvas1080>
       {tela === "abertura" && (
-        <Abertura onComecar={comecarComSom} onAbrirPainel={() => setPainelAberto(true)} />
+        <Abertura pronto={fundosProntos} onComecar={comecarComSom} onAbrirPainel={() => setPainelAberto(true)} />
       )}
 
       {tela === "jogo" && itens.length > 0 && (
         <Jogo
           itens={itens}
+          fundos={fundosPerguntas}
           segundosPorPergunta={CONFIG.segundosPorPergunta}
           msFeedbackCerto={CONFIG.msFeedbackCerto}
           msFeedbackErrado={CONFIG.msFeedbackErrado}
           onTocar={tocar}
-          onProgresso={setIndiceAtual}
           onFim={finalizarPartida}
         />
       )}
 
       {tela === "resultado" && resultado && (
         <Resultado
+          fundo={FUNDO_RESULTADO}
           percentual={resultado.percentual}
           acertos={resultado.acertos}
           total={resultado.total}
@@ -230,6 +224,6 @@ export function App() {
           else document.exitFullscreen?.();
         }}
       />
-    </>
+    </Canvas1080>
   );
 }
