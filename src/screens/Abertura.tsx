@@ -1,12 +1,15 @@
 import { useEffect, useRef } from "react";
 import logoAntonelly from "@/assets/antonelly-logo.svg";
+import { FUNDO_ABERTURA } from "@/config/backgrounds";
+import { TelaFundo } from "@/components/TelaFundo";
 
 type AberturaProps = {
+  pronto: boolean;
   onComecar: () => void;
   onAbrirPainel: () => void;
 };
 
-export function Abertura({ onComecar, onAbrirPainel }: AberturaProps) {
+export function Abertura({ pronto, onComecar, onAbrirPainel }: AberturaProps) {
   const pressaoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function iniciarPressao() {
@@ -26,28 +29,35 @@ export function Abertura({ onComecar, onAbrirPainel }: AberturaProps) {
 
   return (
     <section className="tela tela--ativa abertura">
+      <TelaFundo src={FUNDO_ABERTURA} />
       <div
-        className="marca marca--logo"
+        className="abertura__marca"
         data-marca
         onPointerDown={iniciarPressao}
         onPointerUp={cancelarPressao}
         onPointerLeave={cancelarPressao}
         onPointerCancel={cancelarPressao}
       >
-        <img className="marca__logo" src={logoAntonelly} alt="Antonelly Construções" />
+        <img className="abertura__logo" src={logoAntonelly} alt="Antonelly Construções" />
       </div>
-      <p className="olho">Feira · Totem interativo</p>
-      <h1 className="titulao">
+      <h1 className="abertura__titulo">
         Desafio
-        <em>do Rio</em>
+        <em>Antonelly</em>
       </h1>
-      <p className="chamada">
-        Seis perguntas sobre o rio, o porto e a obra. <b>Quanto você sabe?</b>
+      <p className="abertura__subtitulo">
+        Seis perguntas sobre o rio,
+        <br />o porto e a obra.
+        <br />
+        Quanto você sabe?
       </p>
-      <button className="botao-gigante" type="button" onClick={onComecar}>
-        Toque para começar
+      <button
+        className="botao-cta"
+        type="button"
+        disabled={!pronto}
+        onClick={onComecar}
+      >
+        Vamos começar!
       </button>
-      <p className="rodape-abertura">Menos de 2 minutos · toque na tela</p>
     </section>
   );
 }

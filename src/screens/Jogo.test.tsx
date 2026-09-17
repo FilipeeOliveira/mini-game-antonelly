@@ -21,6 +21,7 @@ describe("Jogo", () => {
     render(
       <Jogo
         itens={itens}
+        fundos={["fundo-a.svg", "fundo-b.svg"]}
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
@@ -35,6 +36,7 @@ describe("Jogo", () => {
     render(
       <Jogo
         itens={itens}
+        fundos={["fundo-a.svg", "fundo-b.svg"]}
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
@@ -50,6 +52,7 @@ describe("Jogo", () => {
     render(
       <Jogo
         itens={itens}
+        fundos={["fundo-a.svg", "fundo-b.svg"]}
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
@@ -65,6 +68,7 @@ describe("Jogo", () => {
     render(
       <Jogo
         itens={itens}
+        fundos={["fundo-a.svg", "fundo-b.svg"]}
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
@@ -81,6 +85,7 @@ describe("Jogo", () => {
     render(
       <Jogo
         itens={itens}
+        fundos={["fundo-a.svg", "fundo-b.svg"]}
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
@@ -105,6 +110,7 @@ describe("Jogo", () => {
     render(
       <Jogo
         itens={itens}
+        fundos={["fundo-a.svg", "fundo-b.svg"]}
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
@@ -146,6 +152,7 @@ describe("Jogo", () => {
     render(
       <Jogo
         itens={umaPergunta}
+        fundos={["fundo-a.svg"]}
         segundosPorPergunta={10}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
@@ -199,6 +206,7 @@ describe("Jogo", () => {
     const { unmount } = render(
       <Jogo
         itens={umaPergunta}
+        fundos={["fundo-a.svg"]}
         segundosPorPergunta={0}
         msFeedbackCerto={100}
         msFeedbackErrado={100}
@@ -227,6 +235,7 @@ describe("Jogo", () => {
       const { container } = render(
         <Jogo
           itens={itens}
+          fundos={["fundo-a.svg", "fundo-b.svg"]}
           segundosPorPergunta={25}
           msFeedbackCerto={100}
           msFeedbackErrado={100}
@@ -241,6 +250,7 @@ describe("Jogo", () => {
       const { container } = render(
         <Jogo
           itens={itens}
+          fundos={["fundo-a.svg", "fundo-b.svg"]}
           segundosPorPergunta={10}
           msFeedbackCerto={100}
           msFeedbackErrado={100}
@@ -259,6 +269,7 @@ describe("Jogo", () => {
       const { container } = render(
         <Jogo
           itens={itens}
+          fundos={["fundo-a.svg", "fundo-b.svg"]}
           segundosPorPergunta={10}
           msFeedbackCerto={100}
           msFeedbackErrado={100}
@@ -281,6 +292,7 @@ describe("Jogo", () => {
       const { container } = render(
         <Jogo
           itens={itens}
+          fundos={["fundo-a.svg", "fundo-b.svg"]}
           segundosPorPergunta={10}
           msFeedbackCerto={500}
           msFeedbackErrado={500}

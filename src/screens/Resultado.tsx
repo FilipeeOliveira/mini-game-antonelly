@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
+import { TelaFundo } from "@/components/TelaFundo";
 
 type ResultadoProps = {
+  fundo: string;
   percentual: number;
   acertos: number;
   total: number;
@@ -19,6 +21,7 @@ type ResultadoProps = {
 };
 
 export function Resultado({
+  fundo,
   percentual,
   acertos,
   total,
@@ -55,12 +58,8 @@ export function Resultado({
 
   return (
     <section className="tela tela--ativa resultado">
-      <div className="marca">
-        <span aria-hidden="true" /> Desafio do Rio
-      </div>
-      <p className="olho" style={{ marginTop: "auto" }}>
-        Sua cota
-      </p>
+      <TelaFundo src={fundo} />
+      <p className="resultado__olho">Sua cota</p>
       <p className="nota">
         {percentual}
         <sup>%</sup>
@@ -70,15 +69,14 @@ export function Resultado({
         {acertos} de {total} perguntas certas
       </p>
       <div className="acoes">
-        <button className="botao botao--primario" type="button" onClick={onJogarDeNovo}>
+        <button className="botao-cta" type="button" onClick={onJogarDeNovo}>
           Jogar de novo
         </button>
-        <button className="botao botao--fantasma" type="button" onClick={onProximoJogador}>
+        <button className="botao-cta botao-cta--fantasma" type="button" onClick={onProximoJogador}>
           Próximo jogador
         </button>
       </div>
       <p className="auto-volta">Voltando à tela inicial em {restante}s</p>
-      <div style={{ marginTop: "auto" }} />
     </section>
   );
 }

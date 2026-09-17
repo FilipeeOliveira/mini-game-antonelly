@@ -10,6 +10,7 @@ describe("Resultado", () => {
   function montar(props: Partial<ComponentProps<typeof Resultado>> = {}) {
     return render(
       <Resultado
+        fundo="fundo-teste.svg"
         percentual={80}
         acertos={5}
         total={6}

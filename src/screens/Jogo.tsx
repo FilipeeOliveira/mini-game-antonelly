@@ -1,14 +1,34 @@
 import { useEffect, useRef, useState } from "react";
 import type { ItemPartida, ResultadoPartida } from "@/game/types";
 import { calcularPercentual } from "@/game/engine";
+import { TelaFundo } from "@/components/TelaFundo";
+import { useAjustarFonte } from "@/hooks/useAjustarFonte";
 
 const LETRAS = ["A", "B", "C", "D"];
 // Últimos N segundos da pergunta em que a barra de tempo vira vermelha
 // (.tempo__barra--curta), fiel ao `iniciarCronometro` do original.
 const SEGUNDOS_BARRA_CURTA = 6;
 
+function IconeCheck() {
+  return (
+    <svg className="alt__check" width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M4 12.5L9.5 18L20 6" stroke="currentColor" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function TextoAlternativa({ texto }: { texto: string }) {
+  const { ref, fonte } = useAjustarFonte<HTMLSpanElement>(44, 20, [texto]);
+  return (
+    <span ref={ref} className="alt__txt" style={{ fontSize: fonte }}>
+      {texto}
+    </span>
+  );
+}
+
 type JogoProps = {
   itens: ItemPartida[];
+  fundos: string[];
   segundosPorPergunta: number;
   msFeedbackCerto: number;
   msFeedbackErrado: number;
@@ -19,6 +39,7 @@ type JogoProps = {
 
 export function Jogo({
   itens,
+  fundos,
   segundosPorPergunta,
   msFeedbackCerto,
   msFeedbackErrado,
@@ -60,6 +81,7 @@ export function Jogo({
 
   const item = itens[indice];
   const idxCerta = item.alternativas.findIndex((a) => a.certa);
+  const { ref: perguntaRef, fonte: perguntaFonte } = useAjustarFonte<HTMLHeadingElement>(58, 32, [item.pergunta]);
 
   useEffect(() => {
     bloqueadoRef.current = false;
@@ -134,13 +156,15 @@ export function Jogo({
   }
 
   return (
-    <section className="tela tela--ativa">
-      <header className="topo">
-        <div className="marca">Desafio do Rio</div>
+    <section className="tela tela--ativa jogo">
+      <TelaFundo src={fundos[indice]} />
+
+      <div className="jogo__hud">
+        <div className="marca">Desafio Antonelly</div>
         <div className="contador">
           <b>{indice + 1}</b> / {itens.length}
         </div>
-      </header>
+      </div>
       <div className="tempo">
         <div
           // key={indice} força a remontagem do elemento a cada pergunta,
@@ -160,33 +184,35 @@ export function Jogo({
         />
       </div>
 
-      <div className="jogo__corpo">
-        <h2 className="pergunta">{item.pergunta}</h2>
-        <div className="alternativas">
-          {item.alternativas.map((alt, i) => {
-            const classes = ["alt"];
-            if (bloqueado) {
-              if (i === idxCerta) classes.push("alt--certa");
-              else if (i === escolhaIdx) classes.push("alt--errada");
-              else classes.push("alt--apagada");
-            }
-            return (
-              <button
-                key={alt.texto}
-                type="button"
-                className={classes.join(" ")}
-                disabled={bloqueado}
-                onClick={() => {
-                  onTocar?.("toque");
-                  responder(i, alt.certa);
-                }}
-              >
-                <span className="alt__letra">{LETRAS[i]}</span>
-                <span className="alt__txt">{alt.texto}</span>
-              </button>
-            );
-          })}
-        </div>
+      <h2 ref={perguntaRef} className="pergunta" style={{ fontSize: perguntaFonte }}>
+        {item.pergunta}
+      </h2>
+
+      <div className="alternativas">
+        {item.alternativas.map((alt, i) => {
+          const classes = ["alt"];
+          if (bloqueado) {
+            if (i === idxCerta) classes.push("alt--certa");
+            else if (i === escolhaIdx) classes.push("alt--errada");
+            else classes.push("alt--apagada");
+          }
+          return (
+            <button
+              key={alt.texto}
+              type="button"
+              className={classes.join(" ")}
+              disabled={bloqueado}
+              onClick={() => {
+                onTocar?.("toque");
+                responder(i, alt.certa);
+              }}
+            >
+              <span className="alt__letra">{LETRAS[i]}</span>
+              <TextoAlternativa texto={alt.texto} />
+              {bloqueado && i === idxCerta && <IconeCheck />}
+            </button>
+          );
+        })}
       </div>
 
       <div
