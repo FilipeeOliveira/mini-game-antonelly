@@ -21,7 +21,7 @@ function partida(sobrescreve: Partial<Partida>): Partida {
 // e procurar a substring dá um teste de conteúdo de verdade, não só "não
 // lançou erro". Ver game/pdf.ts.
 function textoDoPDF(bytes: ArrayBuffer): string {
-  return Buffer.from(bytes).toString("latin1");
+  return new TextDecoder("iso-8859-1").decode(bytes);
 }
 
 describe("gerarRankingPDF", () => {
