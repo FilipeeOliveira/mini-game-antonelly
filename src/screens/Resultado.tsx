@@ -1,5 +1,17 @@
 import { useEffect, useState } from "react";
 import { TelaFundo } from "@/components/TelaFundo";
+import { IconeCoroa } from "@/components/IconeCoroa";
+
+function IconeSelo() {
+  return (
+    <svg className="premio__selo" width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M12 2l2.6 5.27 5.82.85-4.21 4.1 1 5.8L12 15.27 6.79 18.02l1-5.8-4.21-4.1 5.82-.85L12 2z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
 
 type ResultadoProps = {
   fundo: string;
@@ -7,9 +19,11 @@ type ResultadoProps = {
   acertos: number;
   total: number;
   mensagem: string;
+  premio: string | null;
   segundosAutoVolta: number;
   onJogarDeNovo: () => void;
   onProximoJogador: () => void;
+  onAbrirRanking: () => void;
   // Caminho silencioso do retorno automático (25s sem toque). Deliberadamente
   // separado de onProximoJogador: esse último é acionado só pelo clique no
   // botão "Próximo jogador" e, em App.tsx, está encadeado ao som de toque -
@@ -26,9 +40,11 @@ export function Resultado({
   acertos,
   total,
   mensagem,
+  premio,
   segundosAutoVolta,
   onJogarDeNovo,
   onProximoJogador,
+  onAbrirRanking,
   onAutoVolta,
 }: ResultadoProps) {
   const [restante, setRestante] = useState(segundosAutoVolta);
@@ -68,6 +84,14 @@ export function Resultado({
       <p className="acertos">
         {acertos} de {total} perguntas certas
       </p>
+      {premio ? (
+        <div className="premio">
+          <IconeSelo />
+          <span className="premio__nome">{premio}</span>
+        </div>
+      ) : (
+        <p className="premio premio--vazio">Poxa, não foi dessa vez!</p>
+      )}
       <div className="acoes">
         <button className="botao-cta" type="button" onClick={onJogarDeNovo}>
           Jogar de novo
@@ -76,6 +100,10 @@ export function Resultado({
           Próximo jogador
         </button>
       </div>
+      <button className="botao-cta botao-cta--ranking" type="button" onClick={onAbrirRanking}>
+        <IconeCoroa />
+        Ranking
+      </button>
       <p className="auto-volta">Voltando à tela inicial em {restante}s</p>
     </section>
   );

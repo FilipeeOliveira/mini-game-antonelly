@@ -2,14 +2,16 @@ import { useEffect, useRef } from "react";
 import logoAntonelly from "@/assets/antonelly-logo.svg";
 import { FUNDO_ABERTURA } from "@/config/backgrounds";
 import { TelaFundo } from "@/components/TelaFundo";
+import { IconeCoroa } from "@/components/IconeCoroa";
 
 type AberturaProps = {
   pronto: boolean;
   onComecar: () => void;
   onAbrirPainel: () => void;
+  onAbrirRanking: () => void;
 };
 
-export function Abertura({ pronto, onComecar, onAbrirPainel }: AberturaProps) {
+export function Abertura({ pronto, onComecar, onAbrirPainel, onAbrirRanking }: AberturaProps) {
   const pressaoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   function iniciarPressao() {
@@ -57,6 +59,10 @@ export function Abertura({ pronto, onComecar, onAbrirPainel }: AberturaProps) {
         onClick={onComecar}
       >
         Vamos começar!
+      </button>
+      <button className="botao-cta botao-cta--ranking" type="button" onClick={onAbrirRanking}>
+        <IconeCoroa />
+        Ranking
       </button>
     </section>
   );

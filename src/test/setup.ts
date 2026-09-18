@@ -20,3 +20,17 @@ class ImagemFake {
 // @ts-expect-error stub simplificado para o ambiente de teste - só precisa de src/onload/onerror
 global.Image = ImagemFake;
 
+// jsdom não implementa ResizeObserver/IntersectionObserver - usados por
+// ClickSpark (components/ClickSpark.tsx) e pelo useInView da lib "motion"
+// (Ranking.tsx). Stubs no-op bastam: os testes não dependem do disparo real
+// de redimensionamento/interseção, só de esses construtores existirem.
+class ObserverFake {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+// @ts-expect-error stub simplificado para o ambiente de teste
+global.ResizeObserver = ObserverFake;
+// @ts-expect-error stub simplificado para o ambiente de teste
+global.IntersectionObserver = ObserverFake;
+
