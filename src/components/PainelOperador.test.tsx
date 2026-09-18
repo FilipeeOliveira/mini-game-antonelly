@@ -17,6 +17,7 @@ function propsPadrao() {
     partidasEvento: 45,
     brindesPorTipo: { "1 CHOPE": 4, "1 SQUEEZE": 7 },
     onExportarCSV: vi.fn(),
+    onBaixarPDF: vi.fn(),
     onZerarRankingDia: vi.fn(),
     onZerarTudo: vi.fn(),
   };
@@ -68,6 +69,13 @@ describe("PainelOperador", () => {
     render(<PainelOperador {...props} />);
     fireEvent.click(screen.getByRole("button", { name: /exportar csv/i }));
     expect(props.onExportarCSV).toHaveBeenCalledTimes(1);
+  });
+
+  it("baixar PDF chama o callback direto, sem confirmação", () => {
+    const props = propsPadrao();
+    render(<PainelOperador {...props} />);
+    fireEvent.click(screen.getByRole("button", { name: /baixar pdf/i }));
+    expect(props.onBaixarPDF).toHaveBeenCalledTimes(1);
   });
 
   it("zerar ranking do dia exige um segundo toque para confirmar", () => {

@@ -1,6 +1,6 @@
 import type { Partida } from "@/game/types";
 import { ehMesmoDia } from "@/game/historico";
-import { RANKING_TAMANHO, type JanelaRanking } from "@/config/ranking";
+import type { JanelaRanking } from "@/config/ranking";
 
 export function janelaPartidas(historico: Partida[], janela: JanelaRanking): Partida[] {
   if (janela === "evento") return historico;
@@ -15,7 +15,7 @@ export function ordenarRanking(partidas: Partida[]): Partida[] {
   );
 }
 
-export function topRanking(partidas: Partida[], tamanho: number = RANKING_TAMANHO): Partida[] {
+export function topRanking(partidas: Partida[], tamanho: number): Partida[] {
   return ordenarRanking(partidas).slice(0, tamanho);
 }
 

@@ -16,6 +16,7 @@ type PainelOperadorProps = {
   partidasEvento: number;
   brindesPorTipo: Record<string, number>;
   onExportarCSV: () => void;
+  onBaixarPDF: () => void;
   onZerarRankingDia: () => void;
   onZerarTudo: () => void;
 };
@@ -36,6 +37,7 @@ export function PainelOperador({
   partidasEvento,
   brindesPorTipo,
   onExportarCSV,
+  onBaixarPDF,
   onZerarRankingDia,
   onZerarTudo,
 }: PainelOperadorProps) {
@@ -108,6 +110,9 @@ export function PainelOperador({
         <div className="painel__botoes">
           <button className="mini" type="button" onClick={onExportarCSV}>
             Exportar CSV
+          </button>
+          <button className="mini" type="button" onClick={onBaixarPDF}>
+            Baixar PDF
           </button>
           <button className="mini" type="button" onClick={() => clicarAcaoDestrutiva("dia", onZerarRankingDia)}>
             {confirmando === "dia" ? "Confirmar zerar hoje?" : "Zerar ranking do dia"}

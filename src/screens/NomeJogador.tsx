@@ -2,6 +2,7 @@ import { useState } from "react";
 import { FUNDO_ABERTURA } from "@/config/backgrounds";
 import { TelaFundo } from "@/components/TelaFundo";
 import { TecladoVirtual } from "@/components/TecladoVirtual";
+import { Tela } from "@/components/Tela";
 import { normalizarNome, contemPalavraBloqueada, LIMITE_CARACTERES_NOME } from "@/game/nome";
 
 type NomeJogadorProps = {
@@ -12,6 +13,12 @@ type NomeJogadorProps = {
 export function NomeJogador({ onConfirmar, onVoltar }: NomeJogadorProps) {
   const [texto, setTexto] = useState("");
   const [erro, setErro] = useState<string | null>(null);
+
+  // Aviso visual em tempo real: destaca o campo assim que o texto digitado
+  // até agora bate com uma palavra bloqueada, sem esperar o jogador tentar
+  // confirmar - ver contemPalavraBloqueada (game/nome.ts) pra regra de
+  // match (token inteiro pra palavras curtas, substring pras longas).
+  const alertaAoVivo = texto.length > 0 && contemPalavraBloqueada(normalizarNome(texto));
 
   function digitar(letra: string) {
     setErro(null);
@@ -38,12 +45,20 @@ export function NomeJogador({ onConfirmar, onVoltar }: NomeJogadorProps) {
   }
 
   return (
-    <section className="tela tela--ativa nome-jogador">
+    <Tela className="nome-jogador">
       <TelaFundo src={FUNDO_ABERTURA} />
       <h1 className="nome-jogador__titulo">Qual seu nome?</h1>
-      <div className="nome-jogador__campo" aria-live="polite">
+      <div
+        className={`nome-jogador__campo${alertaAoVivo ? " nome-jogador__campo--alerta" : ""}`}
+        aria-live="polite"
+      >
         {texto.length > 0 ? texto : <span className="nome-jogador__placeholder">SEU NOME</span>}
       </div>
+      {alertaAoVivo && !erro && (
+        <p className="nome-jogador__aviso" role="status">
+          ⚠ Esse nome não pode ser usado
+        </p>
+      )}
       {erro && (
         <p className="nome-jogador__erro" role="alert">
           {erro}
@@ -58,6 +73,6 @@ export function NomeJogador({ onConfirmar, onVoltar }: NomeJogadorProps) {
           Confirmar
         </button>
       </div>
-    </section>
+    </Tela>
   );
 }

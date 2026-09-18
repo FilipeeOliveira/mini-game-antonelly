@@ -23,4 +23,21 @@ describe("contemPalavraBloqueada", () => {
   it("não bloqueia nome comum", () => {
     expect(contemPalavraBloqueada("MARIA")).toBe(false);
   });
+
+  it("não bloqueia MARCUS - 'CU' de 2 letras só bate como token inteiro, não substring", () => {
+    expect(contemPalavraBloqueada("MARCUS")).toBe(false);
+  });
+
+  it("bloqueia 'CU' quando é o nome inteiro ou um token separado por espaço", () => {
+    expect(contemPalavraBloqueada("CU")).toBe(true);
+    expect(contemPalavraBloqueada("SEU CU")).toBe(true);
+  });
+
+  it("pega a palavra bloqueada mesmo com letras repetidas (martelar a tecla)", () => {
+    expect(contemPalavraBloqueada("PUUUTA")).toBe(true);
+  });
+
+  it("pega a palavra bloqueada mesmo digitada com espaço entre as letras", () => {
+    expect(contemPalavraBloqueada("P U T A")).toBe(true);
+  });
 });

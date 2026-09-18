@@ -1,4 +1,14 @@
 import "@testing-library/jest-dom/vitest";
+import { MotionGlobalConfig } from "motion/react";
+
+// Sem isto, animações da lib "motion" (AnimatePresence em App.tsx/Tela.tsx,
+// por exemplo) rodam via requestAnimationFrame, que não avança de verdade
+// sob vi.useFakeTimers() - a tela que está saindo fica presa no DOM "no
+// meio" da transição de saída pra sempre, e getByRole/getByText acham dois
+// elementos (o que está saindo + o que entrou) em vez de um só. Escape
+// hatch oficial da lib pra testes: pula toda animação direto pro estado
+// final, de forma síncrona.
+MotionGlobalConfig.skipAnimations = true;
 
 // jsdom não carrega imagens de verdade (sem rede/decoder), então o preload de
 // backgrounds (ver game/preloadImagens.ts) nunca dispararia onload sozinho.

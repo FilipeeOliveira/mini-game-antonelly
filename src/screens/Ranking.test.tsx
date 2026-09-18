@@ -18,25 +18,28 @@ function partida(sobrescreve: Partial<Partida>): Partida {
 }
 
 describe("Ranking", () => {
-  it("com 1 partida só, preenche as posições 2ª/3ª do pódio e a lista com traços, sem quebrar o layout", () => {
+  it("com 1 partida só, preenche as posições 2ª/3ª do pódio com traços e não mostra lista, sem quebrar o layout", () => {
     const { container } = render(
       <Ranking partidas={[partida({ id: "1", nome: "ANA", percentual: 80 })]} idJogadorAtual={null} onVoltar={() => {}} />
     );
     expect(screen.getByText("ANA")).toBeInTheDocument();
     expect(container.querySelectorAll(".podio__coluna")).toHaveLength(3);
     expect(container.querySelectorAll(".podio__coluna--vazia")).toHaveLength(2);
-    // traços: nome+valor das 2 colunas vazias do pódio, + nome+percentual+tempo das posições 4ª/5ª
-    expect(screen.getAllByText("—")).toHaveLength(2 * 2 + 2 * 3);
+    expect(container.querySelector(".ranking__lista")).not.toBeInTheDocument();
+    // traços: só nome+valor das 2 colunas vazias do pódio - sem ninguém além
+    // do top 3, não tem lista embaixo pra preencher com traço nenhum.
+    expect(screen.getAllByText("—")).toHaveLength(2 * 2);
   });
 
-  it("mostra o top 3 no pódio e as posições 4ª/5ª na lista, ordenados", () => {
-    const partidas = Array.from({ length: 8 }, (_, i) =>
-      partida({ id: String(i), nome: `J${i}`, percentual: i * 10 })
+  it("mostra todo mundo que já jogou, não só um top fixo - pódio (1º-3º) e o resto inteiro na lista, ordenados", () => {
+    const partidas = Array.from({ length: 20 }, (_, i) =>
+      partida({ id: String(i), nome: `J${i}`, percentual: i * 5 })
     );
     render(<Ranking partidas={partidas} idJogadorAtual={null} onVoltar={() => {}} />);
-    expect(screen.getByText("J7")).toBeInTheDocument(); // 1º, no pódio
-    expect(screen.getByText("J4")).toBeInTheDocument(); // 4º, na lista
-    expect(screen.queryByText("J2")).not.toBeInTheDocument(); // 6º, fora do top 5
+    expect(screen.getByText("J19")).toBeInTheDocument(); // 1º, no pódio
+    expect(screen.getByText("J16")).toBeInTheDocument(); // 4º, na lista
+    expect(screen.getByText("J2")).toBeInTheDocument(); // 18º - antes ficava de fora, agora aparece
+    expect(screen.getByText("J0")).toBeInTheDocument(); // último colocado - também tem que aparecer
   });
 
   it("destaca a coluna do jogador no pódio quando ele está no top 3", () => {
@@ -55,13 +58,14 @@ describe("Ranking", () => {
     expect(container.querySelector(".ranking__linha--destaque")?.textContent).toContain("PEDRO");
   });
 
-  it("mostra a posição do jogador quando ele não está no top 5", () => {
+  it("mostra a posição do jogador quando ele não está no pódio, mas a linha dele continua visível na lista", () => {
     const partidas = [
       ...Array.from({ length: 5 }, (_, i) => partida({ id: `top-${i}`, percentual: 100 - i })),
       partida({ id: "atual", nome: "PEDRO", percentual: 10 }),
     ];
     render(<Ranking partidas={partidas} idJogadorAtual="atual" onVoltar={() => {}} />);
     expect(screen.getByText("Você ficou em 6º")).toBeInTheDocument();
+    expect(screen.getByText("PEDRO")).toBeInTheDocument();
   });
 
   it("chama onVoltar ao clicar em Voltar", () => {
