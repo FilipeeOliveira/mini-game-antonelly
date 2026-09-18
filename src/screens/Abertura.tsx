@@ -3,6 +3,8 @@ import logoAntonelly from "@/assets/antonelly-logo.svg";
 import { FUNDO_ABERTURA } from "@/config/backgrounds";
 import { TelaFundo } from "@/components/TelaFundo";
 import { IconeCoroa } from "@/components/IconeCoroa";
+import { TituloAbertura } from "@/components/TituloAbertura";
+import { Tela } from "@/components/Tela";
 
 type AberturaProps = {
   pronto: boolean;
@@ -30,7 +32,7 @@ export function Abertura({ pronto, onComecar, onAbrirPainel, onAbrirRanking }: A
   useEffect(() => () => cancelarPressao(), []);
 
   return (
-    <section className="tela tela--ativa abertura">
+    <Tela className="abertura">
       <TelaFundo src={FUNDO_ABERTURA} />
       <div
         className="abertura__marca"
@@ -42,10 +44,7 @@ export function Abertura({ pronto, onComecar, onAbrirPainel, onAbrirRanking }: A
       >
         <img className="abertura__logo" src={logoAntonelly} alt="Antonelly Construções" />
       </div>
-      <h1 className="abertura__titulo">
-        Desafio
-        <em>Antonelly</em>
-      </h1>
+      <TituloAbertura />
       <p className="abertura__subtitulo">
         Seis perguntas sobre o rio,
         <br />o porto e a obra.
@@ -64,6 +63,6 @@ export function Abertura({ pronto, onComecar, onAbrirPainel, onAbrirRanking }: A
         <IconeCoroa />
         Ranking
       </button>
-    </section>
+    </Tela>
   );
 }

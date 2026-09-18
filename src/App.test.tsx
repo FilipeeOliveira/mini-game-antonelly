@@ -4,11 +4,32 @@ import { App } from "./App";
 import { sons } from "@/game/audio";
 import { BANCO_PERGUNTAS } from "@/data/perguntas";
 
+// Troca de tela agora sai animada (AnimatePresence em App.tsx/Tela.tsx, ver
+// components/Tela.tsx). Mesmo com MotionGlobalConfig.skipAnimations = true
+// (test/setup.ts) e o requestAnimationFrame trocado por uma versão baseada
+// em setTimeout (test/rafShim.ts, pra passar pelo relógio fake), o
+// "onComplete" que de fato desmonta a tela que está saindo resolve via
+// microtask - `act()` síncrono e `vi.advanceTimersByTime` não esperam essa
+// microtask, então a tela antiga fica presa no DOM mesmo depois do avanço.
+// Precisa da variante async de ambos (act assíncrono + advanceTimersByTimeAsync,
+// que intercala o avanço do relógio com flushes da fila de microtasks) pra
+// realmente ver o React desmontar a tela. Sem isto, getByRole/getByText
+// encontram elementos duplicados (o antigo + o novo) na primeira query com
+// nome repetido entre telas (ex.: os dois botões "Ranking" de abertura e
+// resultado). 400ms é bem mais que a duração real da transição (0.32s) e
+// bem menos que o menor timer de verdade do app (2000ms de feedback), então
+// não risca disparar nada da lógica do jogo.
+async function avancarTransicaoDeTela() {
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(400);
+  });
+}
+
 // As perguntas reais têm a resposta certa em posições diferentes (A, B ou C),
 // então não dá para clicar sempre no primeiro botão. Este helper lê a pergunta
 // que está na tela, encontra-a no banco e clica na alternativa cujo texto é o
 // gabarito - independente da ordem em que ela foi sorteada.
-function responderCorretamente() {
+async function responderCorretamente() {
   const textoPergunta = document.querySelector(".pergunta")?.textContent ?? "";
   const noBanco = BANCO_PERGUNTAS.find((p) => p.pergunta === textoPergunta);
   if (!noBanco) throw new Error(`pergunta fora do banco: ${textoPergunta}`);
@@ -20,14 +41,16 @@ function responderCorretamente() {
   act(() => {
     fireEvent.click(botao);
   });
-  act(() => {
-    vi.advanceTimersByTime(2000);
+  // msFeedbackCerto da CONFIG do App = 2000ms - depois disso a última
+  // pergunta troca pra tela de resultado (transição animada, ver acima).
+  await act(async () => {
+    await vi.advanceTimersByTimeAsync(2000);
   });
 }
 
 // Uma partida tem CONFIG.perguntasPorPartida = 6 perguntas.
-function jogarPartidaInteiraAcertandoTudo() {
-  for (let i = 0; i < 6; i++) responderCorretamente();
+async function jogarPartidaInteiraAcertandoTudo() {
+  for (let i = 0; i < 6; i++) await responderCorretamente();
 }
 
 // App faz preload de todos os backgrounds no boot antes de liberar "Vamos
@@ -44,16 +67,18 @@ async function aguardarFundosProntos() {
 // pergunta, e o jogo não inicia sem um nome digitado - estes helpers digitam
 // um nome padrão e confirmam, pros testes que não são sobre a identificação
 // do jogador em si.
-function digitarNomeEConfirmar(nome = "JOGADOR") {
+async function digitarNomeEConfirmar(nome = "JOGADOR") {
   for (const letra of nome) {
     fireEvent.click(screen.getByRole("button", { name: letra === " " ? "ESPAÇO" : letra }));
   }
   fireEvent.click(screen.getByRole("button", { name: /confirmar/i }));
+  await avancarTransicaoDeTela();
 }
 
-function comecarEDigitarNome(nome = "JOGADOR") {
+async function comecarEDigitarNome(nome = "JOGADOR") {
   fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
-  digitarNomeEConfirmar(nome);
+  await avancarTransicaoDeTela();
+  await digitarNomeEConfirmar(nome);
 }
 
 describe("App - partida completa", () => {
@@ -75,10 +100,10 @@ describe("App - partida completa", () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    comecarEDigitarNome();
+    await comecarEDigitarNome();
     expect(screen.getByText("1")).toBeInTheDocument();
 
-    jogarPartidaInteiraAcertandoTudo();
+    await jogarPartidaInteiraAcertandoTudo();
 
     expect(screen.getByText("100")).toBeInTheDocument();
     expect(screen.getByText("6 de 6 perguntas certas")).toBeInTheDocument();
@@ -88,10 +113,11 @@ describe("App - partida completa", () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    comecarEDigitarNome();
-    jogarPartidaInteiraAcertandoTudo();
+    await comecarEDigitarNome();
+    await jogarPartidaInteiraAcertandoTudo();
     fireEvent.click(screen.getByRole("button", { name: /jogar de novo/i }));
-    digitarNomeEConfirmar();
+    await avancarTransicaoDeTela();
+    await digitarNomeEConfirmar();
     expect(screen.getByText("1")).toBeInTheDocument();
   });
 
@@ -99,8 +125,8 @@ describe("App - partida completa", () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    comecarEDigitarNome();
-    jogarPartidaInteiraAcertandoTudo();
+    await comecarEDigitarNome();
+    await jogarPartidaInteiraAcertandoTudo();
 
     const historico = JSON.parse(localStorage.getItem("mga:v1:partidas") ?? "[]");
     expect(historico).toHaveLength(1);
@@ -161,8 +187,8 @@ describe("App - som de toque nos botões grandes de navegação", () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    comecarEDigitarNome();
-    jogarPartidaInteiraAcertandoTudo();
+    await comecarEDigitarNome();
+    await jogarPartidaInteiraAcertandoTudo();
     expect(screen.getByText("100")).toBeInTheDocument();
 
     // zera as chamadas acumuladas até aqui (começar a partida, digitar/
@@ -235,12 +261,14 @@ describe("App - identificação do jogador e ranking", () => {
     await aguardarFundosProntos();
 
     fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    await avancarTransicaoDeTela();
     fireEvent.click(screen.getByRole("button", { name: "A" }));
     fireEvent.click(screen.getByRole("button", { name: "N" }));
     fireEvent.click(screen.getByRole("button", { name: "A" }));
     fireEvent.click(screen.getByRole("button", { name: /confirmar/i }));
+    await avancarTransicaoDeTela();
 
-    jogarPartidaInteiraAcertandoTudo();
+    await jogarPartidaInteiraAcertandoTudo();
 
     const historico = JSON.parse(localStorage.getItem("mga:v1:partidas") ?? "[]");
     expect(historico[0].nome).toBe("ANA");
@@ -262,7 +290,9 @@ describe("App - identificação do jogador e ranking", () => {
     await aguardarFundosProntos();
 
     fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    await avancarTransicaoDeTela();
     fireEvent.click(screen.getByRole("button", { name: /voltar/i }));
+    await avancarTransicaoDeTela();
 
     expect(screen.getByRole("button", { name: /vamos começar/i })).toBeInTheDocument();
   });
@@ -272,9 +302,11 @@ describe("App - identificação do jogador e ranking", () => {
     await aguardarFundosProntos();
 
     fireEvent.click(screen.getByRole("button", { name: /ranking/i }));
+    await avancarTransicaoDeTela();
     expect(screen.getByText("Ranking")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /voltar/i }));
+    await avancarTransicaoDeTela();
     expect(screen.getByRole("button", { name: /vamos começar/i })).toBeInTheDocument();
   });
 
@@ -282,13 +314,15 @@ describe("App - identificação do jogador e ranking", () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    comecarEDigitarNome();
-    jogarPartidaInteiraAcertandoTudo();
+    await comecarEDigitarNome();
+    await jogarPartidaInteiraAcertandoTudo();
 
     fireEvent.click(screen.getByRole("button", { name: /^ranking$/i }));
+    await avancarTransicaoDeTela();
     expect(screen.getByText("JOGADOR")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /voltar/i }));
+    await avancarTransicaoDeTela();
     expect(screen.getByText("100")).toBeInTheDocument();
   });
 

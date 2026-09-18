@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { AnimatePresence } from "motion/react";
 import { BANCO_PERGUNTAS } from "@/data/perguntas";
 import { sortearPerguntas, mensagemResultado, embaralhar } from "@/game/engine";
 import type { ItemPartida, ResultadoPartida, Partida } from "@/game/types";
-import { sons } from "@/game/audio";
+import { sons, musica } from "@/game/audio";
 import { preloadImagens } from "@/game/preloadImagens";
 import { TODOS_FUNDOS, FUNDOS_PERGUNTA, FUNDO_RESULTADO } from "@/config/backgrounds";
 import { calcularPremio, logMapaPremios } from "@/game/premiacao";
@@ -16,6 +17,7 @@ import {
 } from "@/game/historico";
 import { janelaPartidas } from "@/game/ranking";
 import { RANKING_JANELA } from "@/config/ranking";
+import { baixarRankingPDF } from "@/game/pdf";
 import { PainelOperador } from "@/components/PainelOperador";
 import { Canvas1080 } from "@/components/Canvas1080";
 import { Abertura } from "@/screens/Abertura";
@@ -64,6 +66,7 @@ export function App() {
 
   const sacolaRef = useRef<number[]>([]);
   const ociosoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const musicaIniciadaRef = useRef(false);
 
   // Preload de todos os backgrounds no boot, antes de liberar "Vamos
   // começar" - o totem roda o dia inteiro em loop e não pode piscar branco
@@ -82,6 +85,27 @@ export function App() {
   useEffect(() => {
     logMapaPremios(CONFIG.perguntasPorPartida);
   }, []);
+
+  // Música de fundo (loop arcade de 15s - ver game/audio.ts): navegadores
+  // bloqueiam áudio sem gesto do usuário, então o loop só pode começar no
+  // primeiro toque em qualquer lugar do totem, igual ao desbloqueio do
+  // AudioContext que os bips de sons.* já dependiam.
+  useEffect(() => {
+    function aoPrimeiroToque() {
+      if (musicaIniciadaRef.current) return;
+      musicaIniciadaRef.current = true;
+      musica.iniciar(somLigado);
+    }
+    document.addEventListener("pointerdown", aoPrimeiroToque);
+    return () => document.removeEventListener("pointerdown", aoPrimeiroToque);
+  }, [somLigado]);
+
+  // Alterna o volume da música junto com o botão de som do painel do
+  // operador, sem parar/reagendar o loop (ver musica.setVolume).
+  useEffect(() => {
+    if (!musicaIniciadaRef.current) return;
+    musica.setVolume(somLigado);
+  }, [somLigado]);
 
   const tocar = useCallback(
     (som: keyof typeof sons) => {
@@ -215,6 +239,10 @@ export function App() {
     URL.revokeObjectURL(url);
   }
 
+  function baixarPDF() {
+    baixarRankingPDF(listarHistorico());
+  }
+
   function zerarRankingDia() {
     zerarHistoricoDoDia();
     atualizarPainelDados();
@@ -296,52 +324,68 @@ export function App() {
 
   return (
     <Canvas1080>
-      {tela === "abertura" && (
-        <Abertura
-          pronto={fundosProntos}
-          onComecar={comecarComSom}
-          onAbrirPainel={() => setPainelAberto(true)}
-          onAbrirRanking={() => abrirRankingComSom("abertura")}
-        />
-      )}
+      {/* AnimatePresence (motion/react) dá saída animada às telas, não só
+          entrada: sem isto, a tela antiga some no frame seguinte enquanto
+          a nova esmaece por cima (.tela é position:absolute - ver
+          theme.css - então as duas se sobrepõem exatamente no lugar
+          certo durante a troca). Cada tela precisa de uma key estável -
+          usar `tela` mantém a identidade de cada ramo entre re-renders
+          (ex.: erros de nome dentro de "nome" não devem re-disparar a
+          transição). */}
+      <AnimatePresence>
+        {tela === "abertura" && (
+          <Abertura
+            key="abertura"
+            pronto={fundosProntos}
+            onComecar={comecarComSom}
+            onAbrirPainel={() => setPainelAberto(true)}
+            onAbrirRanking={() => abrirRankingComSom("abertura")}
+          />
+        )}
 
-      {tela === "nome" && <NomeJogador onConfirmar={confirmarNomeComSom} onVoltar={voltarDoNomeComSom} />}
+        {tela === "nome" && (
+          <NomeJogador key="nome" onConfirmar={confirmarNomeComSom} onVoltar={voltarDoNomeComSom} />
+        )}
 
-      {tela === "jogo" && itens.length > 0 && (
-        <Jogo
-          itens={itens}
-          fundos={fundosPerguntas}
-          segundosPorPergunta={CONFIG.segundosPorPergunta}
-          msFeedbackCerto={CONFIG.msFeedbackCerto}
-          msFeedbackErrado={CONFIG.msFeedbackErrado}
-          onTocar={tocar}
-          onFim={finalizarPartida}
-        />
-      )}
+        {tela === "jogo" && itens.length > 0 && (
+          <Jogo
+            key="jogo"
+            itens={itens}
+            fundos={fundosPerguntas}
+            segundosPorPergunta={CONFIG.segundosPorPergunta}
+            msFeedbackCerto={CONFIG.msFeedbackCerto}
+            msFeedbackErrado={CONFIG.msFeedbackErrado}
+            onTocar={tocar}
+            onFim={finalizarPartida}
+          />
+        )}
 
-      {tela === "resultado" && resultado && (
-        <Resultado
-          fundo={FUNDO_RESULTADO}
-          percentual={resultado.percentual}
-          acertos={resultado.acertos}
-          total={resultado.total}
-          mensagem={mensagemResultado(resultado.percentual)}
-          premio={premioAtual}
-          segundosAutoVolta={CONFIG.segundosOcioso}
-          onJogarDeNovo={jogarDeNovoComSom}
-          onProximoJogador={proximoJogadorComSom}
-          onAbrirRanking={() => abrirRankingComSom("resultado")}
-          onAutoVolta={voltarAbertura}
-        />
-      )}
+        {tela === "resultado" && resultado && (
+          <Resultado
+            key="resultado"
+            fundo={FUNDO_RESULTADO}
+            percentual={resultado.percentual}
+            acertos={resultado.acertos}
+            total={resultado.total}
+            mensagem={mensagemResultado(resultado.percentual)}
+            premio={premioAtual}
+            segundosAutoVolta={CONFIG.segundosOcioso}
+            onJogarDeNovo={jogarDeNovoComSom}
+            onProximoJogador={proximoJogadorComSom}
+            onAbrirRanking={() => abrirRankingComSom("resultado")}
+            onAutoVolta={voltarAbertura}
+          />
+        )}
 
-      {tela === "ranking" && (
-        <Ranking
-          partidas={partidasRanking}
-          idJogadorAtual={origemRanking === "resultado" ? idPartidaAtual : null}
-          onVoltar={voltarDoRankingComSom}
-        />
-      )}
+        {tela === "ranking" && (
+          <Ranking
+            key="ranking"
+            partidas={partidasRanking}
+            idJogadorAtual={origemRanking === "resultado" ? idPartidaAtual : null}
+            onVoltar={voltarDoRankingComSom}
+          />
+        )}
+      </AnimatePresence>
 
       <PainelOperador
         aberto={painelAberto}
@@ -363,6 +407,7 @@ export function App() {
         partidasEvento={painelDados.partidasEvento}
         brindesPorTipo={painelDados.brindesPorTipo}
         onExportarCSV={exportarCSV}
+        onBaixarPDF={baixarPDF}
         onZerarRankingDia={zerarRankingDia}
         onZerarTudo={zerarTudo}
       />

@@ -60,6 +60,23 @@ describe("NomeJogador", () => {
     expect(screen.getByText("SEU NOME")).toBeInTheDocument();
   });
 
+  it("mostra aviso visual em tempo real assim que uma palavra bloqueada é digitada, antes de confirmar", () => {
+    const onConfirmar = vi.fn();
+    render(<NomeJogador onConfirmar={onConfirmar} onVoltar={() => {}} />);
+    digitarTexto("CU");
+    expect(screen.getByRole("status")).toHaveTextContent(/não pode ser usado/i);
+    expect(onConfirmar).not.toHaveBeenCalled();
+  });
+
+  it("permite nome comum que contém uma palavra curta bloqueada por coincidência (MARCUS)", () => {
+    const onConfirmar = vi.fn();
+    render(<NomeJogador onConfirmar={onConfirmar} onVoltar={() => {}} />);
+    digitarTexto("MARCUS");
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /confirmar/i }));
+    expect(onConfirmar).toHaveBeenCalledWith("MARCUS");
+  });
+
   it("chama onVoltar ao clicar em Voltar", () => {
     const onVoltar = vi.fn();
     render(<NomeJogador onConfirmar={() => {}} onVoltar={onVoltar} />);

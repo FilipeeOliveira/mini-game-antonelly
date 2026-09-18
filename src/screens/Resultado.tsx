@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { TelaFundo } from "@/components/TelaFundo";
 import { IconeCoroa } from "@/components/IconeCoroa";
+import { Tela } from "@/components/Tela";
 
 function IconeSelo() {
   return (
@@ -73,7 +74,7 @@ export function Resultado({
   }, [segundosAutoVolta]);
 
   return (
-    <section className="tela tela--ativa resultado">
+    <Tela className="resultado">
       <TelaFundo src={fundo} />
       <p className="resultado__olho">Sua cota</p>
       <p className="nota">
@@ -105,6 +106,6 @@ export function Resultado({
         Ranking
       </button>
       <p className="auto-volta">Voltando à tela inicial em {restante}s</p>
-    </section>
+    </Tela>
   );
 }

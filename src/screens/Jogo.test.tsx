@@ -64,7 +64,7 @@ describe("Jogo", () => {
     expect(screen.getByText("Alternativa 1").closest("button")).toHaveClass("alt--errada");
   });
 
-  it("avança para a próxima pergunta após o tempo de feedback", () => {
+  it("avança para a próxima pergunta após o tempo de feedback", async () => {
     render(
       <Jogo
         itens={itens}
@@ -76,11 +76,17 @@ describe("Jogo", () => {
       />
     );
     fireEvent.click(screen.getByText("Alternativa 0"));
-    act(() => vi.advanceTimersByTime(100));
+    // Troca de pergunta agora sai animada (AnimatePresence, ver Jogo.tsx) -
+    // a variante async do avanço de timers é a que de fato deixa a
+    // transição terminar e "Pergunta 2" ser desmontada/remontada no DOM
+    // (ver o mesmo ajuste, com a explicação completa, em App.test.tsx).
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
     expect(screen.getByText("Pergunta 2")).toBeInTheDocument();
   });
 
-  it("chama onFim com o resultado correto ao terminar todas as perguntas", () => {
+  it("chama onFim com o resultado correto ao terminar todas as perguntas", async () => {
     const onFim = vi.fn();
     render(
       <Jogo
@@ -93,9 +99,13 @@ describe("Jogo", () => {
       />
     );
     fireEvent.click(screen.getByText("Alternativa 0")); // certa na pergunta 1
-    act(() => vi.advanceTimersByTime(100));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
     fireEvent.click(screen.getByText("Alternativa 1")); // certa na pergunta 2
-    act(() => vi.advanceTimersByTime(100));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
 
     expect(onFim).toHaveBeenCalledTimes(1);
     const resultado = onFim.mock.calls[0][0];
@@ -265,7 +275,7 @@ describe("Jogo", () => {
       expect(barra().className).toContain("tempo__barra--curta");
     });
 
-    it("reinicia a barra (sem tempo__barra--curta) ao avançar para a próxima pergunta", () => {
+    it("reinicia a barra (sem tempo__barra--curta) ao avançar para a próxima pergunta", async () => {
       const { container } = render(
         <Jogo
           itens={itens}
@@ -282,7 +292,12 @@ describe("Jogo", () => {
       expect(barra().className).toContain("tempo__barra--curta");
 
       fireEvent.click(screen.getByText("Alternativa 0")); // responde certo, avança
-      act(() => vi.advanceTimersByTime(100)); // msFeedbackCerto
+      // Troca de pergunta agora sai animada (AnimatePresence, ver Jogo.tsx) -
+      // precisa da variante async pra transição terminar (ver explicação no
+      // teste "avança para a próxima pergunta..." acima).
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(100); // msFeedbackCerto
+      });
 
       expect(screen.getByText("Pergunta 2")).toBeInTheDocument();
       expect(barra().className).not.toContain("tempo__barra--curta");

@@ -1,8 +1,10 @@
 import { useEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import type { ItemPartida, ResultadoPartida } from "@/game/types";
 import { calcularPercentual } from "@/game/engine";
 import { TelaFundo } from "@/components/TelaFundo";
 import ClickSpark from "@/components/ClickSpark";
+import { Tela } from "@/components/Tela";
 import { useAjustarFonte } from "@/hooks/useAjustarFonte";
 
 const LETRAS = ["A", "B", "C", "D"];
@@ -18,8 +20,15 @@ function IconeCheck() {
   );
 }
 
-function TextoAlternativa({ texto }: { texto: string }) {
-  const { ref, fonte } = useAjustarFonte<HTMLSpanElement>(44, 20, [texto]);
+// comIcone entra nas deps de propósito: o texto tem o espaço calculado com
+// o layout de ANTES de responder (só letra + texto). Quando a alternativa
+// certa é revelada (resposta ou tempo esgotado), o IconeCheck aparece do
+// lado dela e aperta o espaço de .alt__txt (gap:39px em .alt soma mais um
+// vizinho) - sem isto aqui, o font-size continuava o mesmo de antes do
+// ícone existir, e um texto comprido que já estava no limite vazava da
+// caixa bem na hora de revelar a resposta certa.
+function TextoAlternativa({ texto, comIcone }: { texto: string; comIcone: boolean }) {
+  const { ref, fonte } = useAjustarFonte<HTMLSpanElement>(44, 20, [texto, comIcone]);
   return (
     <span ref={ref} className="alt__txt" style={{ fontSize: fonte }}>
       {texto}
@@ -150,7 +159,7 @@ export function Jogo({
   }
 
   return (
-    <section className="tela tela--ativa jogo">
+    <Tela className="jogo">
       <TelaFundo src={fundos[indice]} />
 
       <div className="jogo__hud">
@@ -178,38 +187,58 @@ export function Jogo({
         />
       </div>
 
-      <h2 ref={perguntaRef} className="pergunta" style={{ fontSize: perguntaFonte }}>
-        {item.pergunta}
-      </h2>
+      {/* Transição entre perguntas: key={indice} faz o AnimatePresence tratar
+          cada pergunta como um bloco novo, esmaecendo/deslizando a antiga pra
+          fora antes da próxima entrar (mode="wait" - sobrepor o texto de duas
+          perguntas ao mesmo tempo, no mesmo lugar da tela, ficaria ilegível).
+          Fica de fora do HUD/barra de tempo, que não devem reiniciar a cada
+          pergunta. Sem posicionamento próprio no wrapper (nem transform) -
+          .pergunta/.alternativas continuam absolute com as mesmas coordenadas
+          de sempre, herdadas de .tela (ver theme.css). */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={indice}
+          className="jogo__pergunta-bloco"
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -16 }}
+          transition={{ duration: 0.22, ease: "easeInOut" }}
+        >
+          <h2 ref={perguntaRef} className="pergunta" style={{ fontSize: perguntaFonte }}>
+            {item.pergunta}
+          </h2>
 
-      <ClickSpark sparkColor="#fff" sparkCount={10} sparkSize={12} sparkRadius={26} duration={450}>
-        <div className="alternativas">
-          {item.alternativas.map((alt, i) => {
-            const classes = ["alt"];
-            if (bloqueado) {
-              if (i === idxCerta) classes.push("alt--certa");
-              else if (i === escolhaIdx) classes.push("alt--errada");
-              else classes.push("alt--apagada");
-            }
-            return (
-              <button
-                key={alt.texto}
-                type="button"
-                className={classes.join(" ")}
-                disabled={bloqueado}
-                onClick={() => {
-                  onTocar?.("toque");
-                  responder(i, alt.certa);
-                }}
-              >
-                <span className="alt__letra">{LETRAS[i]}</span>
-                <TextoAlternativa texto={alt.texto} />
-                {bloqueado && i === idxCerta && <IconeCheck />}
-              </button>
-            );
-          })}
-        </div>
-      </ClickSpark>
-    </section>
+          <ClickSpark sparkColor="#fff" sparkCount={10} sparkSize={12} sparkRadius={26} duration={450}>
+            <div className="alternativas">
+              {item.alternativas.map((alt, i) => {
+                const classes = ["alt"];
+                const comIcone = bloqueado && i === idxCerta;
+                if (bloqueado) {
+                  if (i === idxCerta) classes.push("alt--certa");
+                  else if (i === escolhaIdx) classes.push("alt--errada");
+                  else classes.push("alt--apagada");
+                }
+                return (
+                  <button
+                    key={alt.texto}
+                    type="button"
+                    className={classes.join(" ")}
+                    disabled={bloqueado}
+                    onClick={() => {
+                      onTocar?.("toque");
+                      responder(i, alt.certa);
+                    }}
+                  >
+                    <span className="alt__letra">{LETRAS[i]}</span>
+                    <TextoAlternativa texto={alt.texto} comIcone={comIcone} />
+                    {comIcone && <IconeCheck />}
+                  </button>
+                );
+              })}
+            </div>
+          </ClickSpark>
+        </motion.div>
+      </AnimatePresence>
+    </Tela>
   );
 }
