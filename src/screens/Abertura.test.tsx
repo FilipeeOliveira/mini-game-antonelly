@@ -7,26 +7,33 @@ describe("Abertura", () => {
   afterEach(() => vi.useRealTimers());
 
   it("mostra o botão de começar e o logo", () => {
-    render(<Abertura pronto onComecar={() => {}} onAbrirPainel={() => {}} />);
+    render(<Abertura pronto onComecar={() => {}} onAbrirPainel={() => {}} onAbrirRanking={() => {}} />);
     expect(screen.getByRole("button", { name: /vamos começar/i })).toBeInTheDocument();
     expect(screen.getByAltText("Antonelly Construções")).toBeInTheDocument();
   });
 
   it("chama onComecar ao clicar no botão", () => {
     const onComecar = vi.fn();
-    render(<Abertura pronto onComecar={onComecar} onAbrirPainel={() => {}} />);
+    render(<Abertura pronto onComecar={onComecar} onAbrirPainel={() => {}} onAbrirRanking={() => {}} />);
     fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
     expect(onComecar).toHaveBeenCalledTimes(1);
   });
 
   it("desabilita o botão enquanto os fundos não terminaram de carregar", () => {
-    render(<Abertura pronto={false} onComecar={() => {}} onAbrirPainel={() => {}} />);
+    render(<Abertura pronto={false} onComecar={() => {}} onAbrirPainel={() => {}} onAbrirRanking={() => {}} />);
     expect(screen.getByRole("button", { name: /vamos começar/i })).toBeDisabled();
+  });
+
+  it("chama onAbrirRanking ao clicar em Ranking", () => {
+    const onAbrirRanking = vi.fn();
+    render(<Abertura pronto onComecar={() => {}} onAbrirPainel={() => {}} onAbrirRanking={onAbrirRanking} />);
+    fireEvent.click(screen.getByRole("button", { name: /ranking/i }));
+    expect(onAbrirRanking).toHaveBeenCalledTimes(1);
   });
 
   it("abre o painel após 2s de toque longo na marca", () => {
     const onAbrirPainel = vi.fn();
-    const { container } = render(<Abertura pronto onComecar={() => {}} onAbrirPainel={onAbrirPainel} />);
+    const { container } = render(<Abertura pronto onComecar={() => {}} onAbrirPainel={onAbrirPainel} onAbrirRanking={() => {}} />);
     const marca = container.querySelector("[data-marca]") as HTMLElement;
     fireEvent.pointerDown(marca);
     vi.advanceTimersByTime(2000);
@@ -35,7 +42,7 @@ describe("Abertura", () => {
 
   it("não abre o painel se soltar antes de 2s", () => {
     const onAbrirPainel = vi.fn();
-    const { container } = render(<Abertura pronto onComecar={() => {}} onAbrirPainel={onAbrirPainel} />);
+    const { container } = render(<Abertura pronto onComecar={() => {}} onAbrirPainel={onAbrirPainel} onAbrirRanking={() => {}} />);
     const marca = container.querySelector("[data-marca]") as HTMLElement;
     fireEvent.pointerDown(marca);
     vi.advanceTimersByTime(1000);
@@ -52,7 +59,7 @@ describe("Abertura", () => {
   // dois dedos já soltos havia tempo, abrindo o painel do operador.
   it("dois toques sobrepostos, ambos soltos antes de 2s, não abrem o painel", () => {
     const onAbrirPainel = vi.fn();
-    const { container } = render(<Abertura pronto onComecar={() => {}} onAbrirPainel={onAbrirPainel} />);
+    const { container } = render(<Abertura pronto onComecar={() => {}} onAbrirPainel={onAbrirPainel} onAbrirRanking={() => {}} />);
     const marca = container.querySelector("[data-marca]") as HTMLElement;
 
     fireEvent.pointerDown(marca); // dedo 1 desce em t=0
@@ -72,7 +79,7 @@ describe("Abertura", () => {
 
   it("não abre o painel se a tela for desmontada antes de 2s (segundo dedo navegou)", () => {
     const onAbrirPainel = vi.fn();
-    const { container, unmount } = render(<Abertura pronto onComecar={() => {}} onAbrirPainel={onAbrirPainel} />);
+    const { container, unmount } = render(<Abertura pronto onComecar={() => {}} onAbrirPainel={onAbrirPainel} onAbrirRanking={() => {}} />);
     const marca = container.querySelector("[data-marca]") as HTMLElement;
     fireEvent.pointerDown(marca);
     vi.advanceTimersByTime(1000);

@@ -26,19 +26,37 @@ export function useAjustarFonte<T extends HTMLElement>(
     const el = ref.current;
     if (!el) return;
 
-    let tamanho = fonteInicial;
-    el.style.fontSize = `${tamanho}px`;
-
-    // element.scrollHeight/scrollWidth em jsdom são sempre 0, então este loop
-    // é no-op em teste (comportamento coberto separadamente por proximaFonte).
-    while (tamanho > fonteMinima && (el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth)) {
-      const proxima = proximaFonte(tamanho, fonteMinima, true);
-      if (proxima === null || proxima === tamanho) break;
-      tamanho = proxima;
+    // Mede e encolhe até caber. Extraída pra função porque roda duas vezes:
+    // uma vez já (síncrona, sem "piscar" o tamanho grande antes de encolher)
+    // e de novo quando as fontes @fontsource terminam de carregar. Sem a
+    // segunda passada, medir antes da fonte real carregar usa as métricas da
+    // fonte de fallback (mais estreita) - o texto passa despercebido como
+    // "cabe" e, quando a fonte real troca (mais larga, principalmente nos
+    // pesos bold/900 do Archivo), transborda pra fora da caixa sem nunca
+    // encolher, cortado por overflow:hidden.
+    function ajustar() {
+      if (!el) return;
+      let tamanho = fonteInicial;
       el.style.fontSize = `${tamanho}px`;
+
+      // element.scrollHeight/scrollWidth em jsdom são sempre 0, então este
+      // loop é no-op em teste (comportamento coberto separadamente por
+      // proximaFonte).
+      while (tamanho > fonteMinima && (el.scrollHeight > el.clientHeight || el.scrollWidth > el.clientWidth)) {
+        const proxima = proximaFonte(tamanho, fonteMinima, true);
+        if (proxima === null || proxima === tamanho) break;
+        tamanho = proxima;
+        el.style.fontSize = `${tamanho}px`;
+      }
+
+      setFonte(tamanho);
     }
 
-    setFonte(tamanho);
+    ajustar();
+
+    if (typeof document !== "undefined" && document.fonts) {
+      document.fonts.ready.then(ajustar);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 

@@ -40,6 +40,22 @@ async function aguardarFundosProntos() {
   });
 }
 
+// "Vamos começar" leva pra tela de nome do jogador antes da primeira
+// pergunta, e o jogo não inicia sem um nome digitado - estes helpers digitam
+// um nome padrão e confirmam, pros testes que não são sobre a identificação
+// do jogador em si.
+function digitarNomeEConfirmar(nome = "JOGADOR") {
+  for (const letra of nome) {
+    fireEvent.click(screen.getByRole("button", { name: letra === " " ? "ESPAÇO" : letra }));
+  }
+  fireEvent.click(screen.getByRole("button", { name: /confirmar/i }));
+}
+
+function comecarEDigitarNome(nome = "JOGADOR") {
+  fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+  digitarNomeEConfirmar(nome);
+}
+
 describe("App - partida completa", () => {
   beforeEach(() => {
     vi.useFakeTimers();
@@ -52,13 +68,14 @@ describe("App - partida completa", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    localStorage.clear();
   });
 
   it("joga uma partida inteira acertando tudo e chega a 100% no resultado", async () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    comecarEDigitarNome();
     expect(screen.getByText("1")).toBeInTheDocument();
 
     jogarPartidaInteiraAcertandoTudo();
@@ -67,14 +84,27 @@ describe("App - partida completa", () => {
     expect(screen.getByText("6 de 6 perguntas certas")).toBeInTheDocument();
   });
 
-  it("'Jogar de novo' no resultado inicia uma nova partida", async () => {
+  it("'Jogar de novo' no resultado volta pra tela de nome e inicia uma nova partida", async () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    comecarEDigitarNome();
     jogarPartidaInteiraAcertandoTudo();
     fireEvent.click(screen.getByRole("button", { name: /jogar de novo/i }));
+    digitarNomeEConfirmar();
     expect(screen.getByText("1")).toBeInTheDocument();
+  });
+
+  it("grava a partida no histórico assim que ela termina", async () => {
+    render(<App />);
+    await aguardarFundosProntos();
+
+    comecarEDigitarNome();
+    jogarPartidaInteiraAcertandoTudo();
+
+    const historico = JSON.parse(localStorage.getItem("mga:v1:partidas") ?? "[]");
+    expect(historico).toHaveLength(1);
+    expect(historico[0]).toMatchObject({ nome: "JOGADOR", acertos: 6, total: 6, percentual: 100, premio: "1 CHOPE" });
   });
 });
 
@@ -87,6 +117,7 @@ describe("App - som de toque nos botões grandes de navegação", () => {
   afterEach(() => {
     vi.useRealTimers();
     vi.restoreAllMocks();
+    localStorage.clear();
   });
 
   it("toca o som de toque ao tocar em 'Vamos começar' com o som ligado", async () => {
@@ -122,7 +153,7 @@ describe("App - som de toque nos botões grandes de navegação", () => {
 
   // Fidelidade ao original: só o listener de clique de btn-sair chama
   // somToque() antes de irParaAbertura(); o auto-retorno da tela de
-  // resultado (25s sem toque) chama irParaAbertura() puro, sem som. Se o
+  // resultado (sem toque) chama irParaAbertura() puro, sem som. Se o
   // timeout de auto-retorno tocar som, o totem beepa sozinho para um
   // estande vazio a cada rodada, dezenas/centenas de vezes por dia.
   it("não toca som de toque no auto-retorno silencioso da tela de resultado, sem toque do usuário", async () => {
@@ -130,18 +161,19 @@ describe("App - som de toque nos botões grandes de navegação", () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    comecarEDigitarNome();
     jogarPartidaInteiraAcertandoTudo();
     expect(screen.getByText("100")).toBeInTheDocument();
 
-    // zera as chamadas acumuladas até aqui (começar a partida e responder
-    // cada pergunta tocam "toque") para isolar só o caminho do auto-retorno.
+    // zera as chamadas acumuladas até aqui (começar a partida, digitar/
+    // confirmar o nome e responder cada pergunta tocam "toque") para isolar
+    // só o caminho do auto-retorno.
     espiaoToque.mockClear();
 
-    // segundosOciosoResultado da CONFIG do App = 25s; nenhum toque do
-    // usuário acontece nesse intervalo.
+    // segundosOcioso da CONFIG do App = 60s; nenhum toque do usuário
+    // acontece nesse intervalo.
     act(() => {
-      vi.advanceTimersByTime(25000);
+      vi.advanceTimersByTime(60000);
     });
 
     expect(espiaoToque).not.toHaveBeenCalled();
@@ -156,6 +188,7 @@ describe("App - painel do operador aberto por engano não trava o totem", () => 
 
   afterEach(() => {
     vi.useRealTimers();
+    localStorage.clear();
   });
 
   // O timeout de ociosidade do App retornava cedo sempre que `tela` era
@@ -178,9 +211,103 @@ describe("App - painel do operador aberto por engano não trava o totem", () => 
     expect(screen.getByText("Painel do operador")).toBeInTheDocument();
 
     act(() => {
-      vi.advanceTimersByTime(45000);
+      vi.advanceTimersByTime(60000);
     });
 
     expect(screen.queryByText("Painel do operador")).not.toBeInTheDocument();
   });
 });
+
+describe("App - identificação do jogador e ranking", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.spyOn(Math, "random").mockReturnValue(0.999999);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+    localStorage.clear();
+  });
+
+  it("usa o nome digitado na tela de identificação", async () => {
+    render(<App />);
+    await aguardarFundosProntos();
+
+    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: "A" }));
+    fireEvent.click(screen.getByRole("button", { name: "N" }));
+    fireEvent.click(screen.getByRole("button", { name: "A" }));
+    fireEvent.click(screen.getByRole("button", { name: /confirmar/i }));
+
+    jogarPartidaInteiraAcertandoTudo();
+
+    const historico = JSON.parse(localStorage.getItem("mga:v1:partidas") ?? "[]");
+    expect(historico[0].nome).toBe("ANA");
+  });
+
+  it("não inicia a partida se o nome ficar vazio - Confirmar sem digitar nada não avança", async () => {
+    render(<App />);
+    await aguardarFundosProntos();
+
+    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /confirmar/i }));
+
+    expect(screen.getByText("Digite seu nome para continuar")).toBeInTheDocument();
+    expect(screen.queryByText("1")).not.toBeInTheDocument();
+  });
+
+  it("'Voltar' na tela de nome desiste e retorna pra abertura sem iniciar partida", async () => {
+    render(<App />);
+    await aguardarFundosProntos();
+
+    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /voltar/i }));
+
+    expect(screen.getByRole("button", { name: /vamos começar/i })).toBeInTheDocument();
+  });
+
+  it("abre o ranking a partir da abertura e volta pra abertura", async () => {
+    render(<App />);
+    await aguardarFundosProntos();
+
+    fireEvent.click(screen.getByRole("button", { name: /ranking/i }));
+    expect(screen.getByText("Ranking")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /voltar/i }));
+    expect(screen.getByRole("button", { name: /vamos começar/i })).toBeInTheDocument();
+  });
+
+  it("abre o ranking a partir do resultado, destaca o jogador, e volta pro resultado", async () => {
+    render(<App />);
+    await aguardarFundosProntos();
+
+    comecarEDigitarNome();
+    jogarPartidaInteiraAcertandoTudo();
+
+    fireEvent.click(screen.getByRole("button", { name: /^ranking$/i }));
+    expect(screen.getByText("JOGADOR")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: /voltar/i }));
+    expect(screen.getByText("100")).toBeInTheDocument();
+  });
+
+  it("idle na tela de nome (inclusive no teclado) volta pra abertura e descarta a partida", async () => {
+    render(<App />);
+    await aguardarFundosProntos();
+
+    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: "A" })); // toque no teclado reinicia o ocioso
+
+    act(() => {
+      vi.advanceTimersByTime(60000);
+    });
+
+    expect(screen.getByRole("button", { name: /vamos começar/i })).toBeInTheDocument();
+    expect(listarHistoricoDoTeste()).toHaveLength(0);
+  });
+});
+
+function listarHistoricoDoTeste(): unknown[] {
+  return JSON.parse(localStorage.getItem("mga:v1:partidas") ?? "[]");
+}

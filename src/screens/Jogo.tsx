@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ItemPartida, ResultadoPartida } from "@/game/types";
 import { calcularPercentual } from "@/game/engine";
 import { TelaFundo } from "@/components/TelaFundo";
+import ClickSpark from "@/components/ClickSpark";
 import { useAjustarFonte } from "@/hooks/useAjustarFonte";
 
 const LETRAS = ["A", "B", "C", "D"];
@@ -50,8 +51,6 @@ export function Jogo({
   const [indice, setIndice] = useState(0);
   const [escolhaIdx, setEscolhaIdx] = useState<number | null>(null);
   const [bloqueado, setBloqueado] = useState(false);
-  const [veredito, setVeredito] = useState<"certo" | "errado" | null>(null);
-  const [expirou, setExpirou] = useState(false);
   const [barraCurta, setBarraCurta] = useState(false);
   const acertosRef = useRef(0);
   const temposRef = useRef<number[]>([]);
@@ -87,14 +86,12 @@ export function Jogo({
     bloqueadoRef.current = false;
     setEscolhaIdx(null);
     setBloqueado(false);
-    setVeredito(null);
-    setExpirou(false);
     setBarraCurta(false);
     inicioPerguntaRef.current = Date.now();
 
     if (!segundosPorPergunta) return;
     const cronometro = setTimeout(() => {
-      responder(-1, false, true);
+      responder(-1, false);
     }, segundosPorPergunta * 1000);
     let corridoBarraCurta: ReturnType<typeof setTimeout> | undefined;
     if (segundosPorPergunta > SEGUNDOS_BARRA_CURTA) {
@@ -116,22 +113,19 @@ export function Jogo({
     };
   }, []);
 
-  function responder(idxEscolhido: number, certa: boolean, tempoEsgotado = false) {
+  function responder(idxEscolhido: number, certa: boolean) {
     if (bloqueadoRef.current) return;
     bloqueadoRef.current = true;
     setBloqueado(true);
     setEscolhaIdx(idxEscolhido);
-    setExpirou(tempoEsgotado);
 
     const tempo = Date.now() - inicioPerguntaRef.current;
     temposRef.current = [...temposRef.current, tempo];
 
     if (certa) {
       acertosRef.current += 1;
-      setVeredito("certo");
       onTocar?.("certo");
     } else {
-      setVeredito("errado");
       onTocar?.("errado");
     }
 
@@ -188,55 +182,34 @@ export function Jogo({
         {item.pergunta}
       </h2>
 
-      <div className="alternativas">
-        {item.alternativas.map((alt, i) => {
-          const classes = ["alt"];
-          if (bloqueado) {
-            if (i === idxCerta) classes.push("alt--certa");
-            else if (i === escolhaIdx) classes.push("alt--errada");
-            else classes.push("alt--apagada");
-          }
-          return (
-            <button
-              key={alt.texto}
-              type="button"
-              className={classes.join(" ")}
-              disabled={bloqueado}
-              onClick={() => {
-                onTocar?.("toque");
-                responder(i, alt.certa);
-              }}
-            >
-              <span className="alt__letra">{LETRAS[i]}</span>
-              <TextoAlternativa texto={alt.texto} />
-              {bloqueado && i === idxCerta && <IconeCheck />}
-            </button>
-          );
-        })}
-      </div>
-
-      <div
-        className={[
-          "veredito",
-          veredito ? "veredito--visivel" : "",
-          veredito === "certo" ? "veredito--ok" : "",
-          veredito === "errado" ? "veredito--nao" : "",
-        ]
-          .filter(Boolean)
-          .join(" ")}
-        role="status"
-        aria-live="polite"
-      >
-        <p className="veredito__titulo">
-          {veredito === "certo"
-            ? "Isso mesmo!"
-            : veredito === "errado"
-              ? expirou
-                ? "Tempo esgotado"
-                : "Não foi essa"
-              : ""}
-        </p>
-      </div>
+      <ClickSpark sparkColor="#fff" sparkCount={10} sparkSize={12} sparkRadius={26} duration={450}>
+        <div className="alternativas">
+          {item.alternativas.map((alt, i) => {
+            const classes = ["alt"];
+            if (bloqueado) {
+              if (i === idxCerta) classes.push("alt--certa");
+              else if (i === escolhaIdx) classes.push("alt--errada");
+              else classes.push("alt--apagada");
+            }
+            return (
+              <button
+                key={alt.texto}
+                type="button"
+                className={classes.join(" ")}
+                disabled={bloqueado}
+                onClick={() => {
+                  onTocar?.("toque");
+                  responder(i, alt.certa);
+                }}
+              >
+                <span className="alt__letra">{LETRAS[i]}</span>
+                <TextoAlternativa texto={alt.texto} />
+                {bloqueado && i === idxCerta && <IconeCheck />}
+              </button>
+            );
+          })}
+        </div>
+      </ClickSpark>
     </section>
   );
 }

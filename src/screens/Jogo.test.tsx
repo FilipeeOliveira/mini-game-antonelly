@@ -32,7 +32,7 @@ describe("Jogo", () => {
     expect(screen.getAllByRole("button")).toHaveLength(4);
   });
 
-  it("responder certo mostra 'Isso mesmo!' e desabilita as alternativas", () => {
+  it("responder certo desabilita as alternativas e destaca a certa", () => {
     render(
       <Jogo
         itens={itens}
@@ -44,11 +44,11 @@ describe("Jogo", () => {
       />
     );
     fireEvent.click(screen.getByText("Alternativa 0"));
-    expect(screen.getByText("Isso mesmo!")).toBeInTheDocument();
+    expect(screen.getByText("Alternativa 0").closest("button")).toHaveClass("alt--certa");
     screen.getAllByRole("button").forEach((b) => expect(b).toBeDisabled());
   });
 
-  it("responder errado mostra 'Não foi essa' e destaca a certa", () => {
+  it("responder errado destaca a certa e marca a escolhida como errada", () => {
     render(
       <Jogo
         itens={itens}
@@ -60,8 +60,8 @@ describe("Jogo", () => {
       />
     );
     fireEvent.click(screen.getByText("Alternativa 1"));
-    expect(screen.getByText("Não foi essa")).toBeInTheDocument();
     expect(screen.getByText("Alternativa 0").closest("button")).toHaveClass("alt--certa");
+    expect(screen.getByText("Alternativa 1").closest("button")).toHaveClass("alt--errada");
   });
 
   it("avança para a próxima pergunta após o tempo de feedback", () => {

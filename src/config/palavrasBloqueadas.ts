@@ -1,0 +1,37 @@
+// Lista simples de bloqueio para o nome exibido no ranking (fica exposto ao
+// público). Comparação em game/nome.ts é por substring, sobre o nome já
+// normalizado (maiúsculas, sem acento) - editar esta lista não exige tocar
+// em nenhum componente.
+export const PALAVRAS_BLOQUEADAS: string[] = [
+  "PORRA",
+  "MERDA",
+  "CARALHO",
+  "PUTA",
+  "PUTO",
+  "BOSTA",
+  "CACETE",
+  "FODA",
+  "FODASE",
+  "VIADO",
+  "CORNO",
+  "OTARIO",
+  "OTARIA",
+  "IDIOTA",
+  "BURRO",
+  "BURRA",
+  "RETARDADO",
+  "RETARDADA",
+  "PQP",
+  "VTNC",
+  "FDP",
+  "ARROMBADO",
+  "ARROMBADA",
+  "BOSTAGEM",
+  "CU",
+  "PENIS",
+  "BUCETA",
+  "PICA",
+  "XOXOTA",
+  "NAZISTA",
+  "HITLER",
+];

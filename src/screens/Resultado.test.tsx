@@ -15,9 +15,11 @@ describe("Resultado", () => {
         acertos={5}
         total={6}
         mensagem="Quase lá em cima: só faltou um palmo de água"
+        premio="1 SQUEEZE"
         segundosAutoVolta={25}
         onJogarDeNovo={() => {}}
         onProximoJogador={() => {}}
+        onAbrirRanking={() => {}}
         onAutoVolta={() => {}}
         {...props}
       />
@@ -68,5 +70,23 @@ describe("Resultado", () => {
     montar({ segundosAutoVolta: 2 });
     vi.advanceTimersByTime(2000);
     expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("mostra o prêmio quando o jogador ganhou", () => {
+    montar({ premio: "1 CHOPE" });
+    expect(screen.getByText("1 CHOPE")).toBeInTheDocument();
+  });
+
+  it("mostra a mensagem de consolação, sem caixa de prêmio, quando o jogador não ganhou", () => {
+    const { container } = montar({ premio: null });
+    expect(screen.getByText("Poxa, não foi dessa vez!")).toBeInTheDocument();
+    expect(container.querySelector(".premio__selo")).not.toBeInTheDocument();
+  });
+
+  it("chama onAbrirRanking ao clicar em Ranking", () => {
+    const onAbrirRanking = vi.fn();
+    montar({ onAbrirRanking });
+    fireEvent.click(screen.getByRole("button", { name: /ranking/i }));
+    expect(onAbrirRanking).toHaveBeenCalledTimes(1);
   });
 });

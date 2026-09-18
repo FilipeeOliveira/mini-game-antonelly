@@ -1,27 +1,44 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { BANCO_PERGUNTAS } from "@/data/perguntas";
 import { sortearPerguntas, mensagemResultado, embaralhar } from "@/game/engine";
-import type { ItemPartida, ResultadoPartida } from "@/game/types";
+import type { ItemPartida, ResultadoPartida, Partida } from "@/game/types";
 import { sons } from "@/game/audio";
 import { preloadImagens } from "@/game/preloadImagens";
 import { TODOS_FUNDOS, FUNDOS_PERGUNTA, FUNDO_RESULTADO } from "@/config/backgrounds";
+import { calcularPremio, logMapaPremios } from "@/game/premiacao";
+import {
+  listarHistorico,
+  salvarPartida,
+  zerarHistoricoDoDia,
+  zerarHistoricoCompleto,
+  contarBrindesPorTipo,
+  historicoParaCSV,
+} from "@/game/historico";
+import { janelaPartidas } from "@/game/ranking";
+import { RANKING_JANELA } from "@/config/ranking";
 import { PainelOperador } from "@/components/PainelOperador";
 import { Canvas1080 } from "@/components/Canvas1080";
 import { Abertura } from "@/screens/Abertura";
+import { NomeJogador } from "@/screens/NomeJogador";
 import { Jogo } from "@/screens/Jogo";
 import { Resultado } from "@/screens/Resultado";
+import { Ranking } from "@/screens/Ranking";
 
 const CONFIG = {
   perguntasPorPartida: 6,
   segundosPorPergunta: 25,
   msFeedbackCerto: 2000,
   msFeedbackErrado: 2900,
-  segundosOciosoJogo: 45,
-  segundosOciosoResultado: 25,
+  // Único valor de ociosidade pra toda tela que não seja a abertura
+  // (inclusive o teclado de nome e o ranking) - volta pra abertura e
+  // descarta a partida em andamento, que já não é salva no histórico
+  // porque isto só acontece em finalizarPartida.
+  segundosOcioso: 60,
   embaralharAlternativas: true,
 };
 
-type Tela = "abertura" | "jogo" | "resultado";
+type Tela = "abertura" | "nome" | "jogo" | "resultado" | "ranking";
+type OrigemRanking = "abertura" | "resultado";
 
 export function App() {
   const [tela, setTela] = useState<Tela>("abertura");
@@ -33,6 +50,18 @@ export function App() {
   const [partidas, setPartidas] = useState(0);
   const [somaPercentual, setSomaPercentual] = useState(0);
   const [fundosProntos, setFundosProntos] = useState(false);
+
+  const [nomeJogador, setNomeJogador] = useState("JOGADOR");
+  const [premioAtual, setPremioAtual] = useState<string | null>(null);
+  const [idPartidaAtual, setIdPartidaAtual] = useState<string | null>(null);
+  const [origemRanking, setOrigemRanking] = useState<OrigemRanking>("abertura");
+  const [partidasRanking, setPartidasRanking] = useState<Partida[]>([]);
+  const [painelDados, setPainelDados] = useState({
+    partidasHoje: 0,
+    partidasEvento: 0,
+    brindesPorTipo: {} as Record<string, number>,
+  });
+
   const sacolaRef = useRef<number[]>([]);
   const ociosoRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -49,6 +78,11 @@ export function App() {
     };
   }, []);
 
+  // Loga o mapa acertos -> % -> prêmio uma vez no boot, pra conferência.
+  useEffect(() => {
+    logMapaPremios(CONFIG.perguntasPorPartida);
+  }, []);
+
   const tocar = useCallback(
     (som: keyof typeof sons) => {
       if (!somLigado) return;
@@ -56,6 +90,27 @@ export function App() {
     },
     [somLigado]
   );
+
+  function atualizarPainelDados() {
+    const historico = listarHistorico();
+    setPainelDados({
+      partidasHoje: janelaPartidas(historico, "dia").length,
+      partidasEvento: historico.length,
+      brindesPorTipo: contarBrindesPorTipo(historico),
+    });
+  }
+
+  // Carrega os números do histórico só quando o painel abre - é um painel
+  // raramente usado, não precisa de um estado global reativo.
+  useEffect(() => {
+    if (painelAberto) atualizarPainelDados();
+  }, [painelAberto]);
+
+  // Recarrega o ranking sempre que a tela abre, com a janela configurada
+  // (dia/evento - ver config/ranking.ts).
+  useEffect(() => {
+    if (tela === "ranking") setPartidasRanking(janelaPartidas(listarHistorico(), RANKING_JANELA));
+  }, [tela]);
 
   function iniciarPartida() {
     const { itens: novosItens, sacolaRestante } = sortearPerguntas(
@@ -71,11 +126,34 @@ export function App() {
     // 6 perguntas - então cada pergunta ganha um fundo diferente).
     setFundosPerguntas(embaralhar(FUNDOS_PERGUNTA).slice(0, novosItens.length));
     setResultado(null);
+    setPremioAtual(null);
+    setIdPartidaAtual(null);
     setTela("jogo");
   }
 
   function finalizarPartida(res: ResultadoPartida) {
+    const premio = calcularPremio(res.percentual);
+    const partida: Partida = {
+      id: crypto.randomUUID(),
+      nome: nomeJogador,
+      acertos: res.acertos,
+      total: res.total,
+      percentual: res.percentual,
+      // Reaproveita tempoTotalMs (soma dos tempos de resposta) em vez de um
+      // cronômetro de parede novo: como o tempo só serve de desempate entre
+      // percentuais iguais, e nesse caso a pausa de feedback acumulada é
+      // idêntica pros dois jogadores (mesmo número de acertos/erros), a
+      // ordenação relativa é sempre a mesma - sem precisar tocar em Jogo.tsx.
+      tempoMs: res.tempoTotalMs,
+      premio,
+      timestamp: Date.now(),
+    };
+    // Grava assim que a partida termina, não ao sair da tela.
+    salvarPartida(partida);
+
     setResultado(res);
+    setPremioAtual(premio);
+    setIdPartidaAtual(partida.id);
     setPartidas((p) => p + 1);
     setSomaPercentual((s) => s + res.percentual);
     tocar("fim");
@@ -86,23 +164,65 @@ export function App() {
     setTela("abertura");
   }
 
-  // som de toque nos três botões grandes de navegação (fiel ao HTML
-  // original: btn-comecar, btn-denovo e btn-sair chamam somToque() antes de
-  // navegar). Envolvido aqui, e não como prop nova em Abertura/Resultado,
-  // porque App já é quem possui `tocar` e os callbacks de navegação.
+  // som de toque nos botões grandes de navegação (fiel ao HTML original:
+  // btn-comecar, btn-denovo e btn-sair chamam somToque() antes de navegar,
+  // convenção estendida aqui pras novas telas de nome/ranking).
   function comecarComSom() {
     tocar("toque");
+    setTela("nome");
+  }
+
+  function confirmarNomeComSom(nome: string) {
+    tocar("toque");
+    setNomeJogador(nome);
     iniciarPartida();
+  }
+
+  function voltarDoNomeComSom() {
+    tocar("toque");
+    voltarAbertura();
   }
 
   function jogarDeNovoComSom() {
     tocar("toque");
-    iniciarPartida();
+    setTela("nome");
   }
 
   function proximoJogadorComSom() {
     tocar("toque");
     voltarAbertura();
+  }
+
+  function abrirRankingComSom(origem: OrigemRanking) {
+    tocar("toque");
+    setOrigemRanking(origem);
+    setTela("ranking");
+  }
+
+  function voltarDoRankingComSom() {
+    tocar("toque");
+    setTela(origemRanking);
+  }
+
+  function exportarCSV() {
+    const csv = historicoParaCSV(listarHistorico());
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `desafio-antonelly-historico-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function zerarRankingDia() {
+    zerarHistoricoDoDia();
+    atualizarPainelDados();
+  }
+
+  function zerarTudo() {
+    zerarHistoricoCompleto();
+    atualizarPainelDados();
   }
 
   // comportamentos de quiosque: bloquear menu de contexto, arrastar e gestos
@@ -141,7 +261,11 @@ export function App() {
     };
   }, []);
 
-  // timeout de ociosidade: volta pra abertura sem toque na tela
+  // timeout de ociosidade: volta pra abertura sem toque na tela, em
+  // qualquer tela que não seja a abertura (nome, jogo, resultado, ranking -
+  // inclusive o teclado virtual, que dispara pointerdown como qualquer
+  // outro toque). Descarta a partida em andamento: nada foi salvo no
+  // histórico até finalizarPartida rodar.
   //
   // Também cobre o painel do operador quando ele fica aberto por engano
   // sobre a própria tela de abertura (ex.: dois dedos pousando e soltando
@@ -157,15 +281,10 @@ export function App() {
       if (tela === "abertura") {
         // painel aberto sobre a abertura: nada de navegação de tela a
         // fazer, só fechar o painel se ficar parado tempo demais.
-        ociosoRef.current = setTimeout(
-          () => setPainelAberto(false),
-          CONFIG.segundosOciosoJogo * 1000
-        );
+        ociosoRef.current = setTimeout(() => setPainelAberto(false), CONFIG.segundosOcioso * 1000);
         return;
       }
-      const segundos =
-        tela === "resultado" ? CONFIG.segundosOciosoResultado + 5 : CONFIG.segundosOciosoJogo;
-      ociosoRef.current = setTimeout(voltarAbertura, segundos * 1000);
+      ociosoRef.current = setTimeout(voltarAbertura, CONFIG.segundosOcioso * 1000);
     }
     reiniciarOcioso();
     document.addEventListener("pointerdown", reiniciarOcioso);
@@ -178,8 +297,15 @@ export function App() {
   return (
     <Canvas1080>
       {tela === "abertura" && (
-        <Abertura pronto={fundosProntos} onComecar={comecarComSom} onAbrirPainel={() => setPainelAberto(true)} />
+        <Abertura
+          pronto={fundosProntos}
+          onComecar={comecarComSom}
+          onAbrirPainel={() => setPainelAberto(true)}
+          onAbrirRanking={() => abrirRankingComSom("abertura")}
+        />
       )}
+
+      {tela === "nome" && <NomeJogador onConfirmar={confirmarNomeComSom} onVoltar={voltarDoNomeComSom} />}
 
       {tela === "jogo" && itens.length > 0 && (
         <Jogo
@@ -200,10 +326,20 @@ export function App() {
           acertos={resultado.acertos}
           total={resultado.total}
           mensagem={mensagemResultado(resultado.percentual)}
-          segundosAutoVolta={CONFIG.segundosOciosoResultado}
+          premio={premioAtual}
+          segundosAutoVolta={CONFIG.segundosOcioso}
           onJogarDeNovo={jogarDeNovoComSom}
           onProximoJogador={proximoJogadorComSom}
+          onAbrirRanking={() => abrirRankingComSom("resultado")}
           onAutoVolta={voltarAbertura}
+        />
+      )}
+
+      {tela === "ranking" && (
+        <Ranking
+          partidas={partidasRanking}
+          idJogadorAtual={origemRanking === "resultado" ? idPartidaAtual : null}
+          onVoltar={voltarDoRankingComSom}
         />
       )}
 
@@ -223,6 +359,12 @@ export function App() {
           if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
           else document.exitFullscreen?.();
         }}
+        partidasHoje={painelDados.partidasHoje}
+        partidasEvento={painelDados.partidasEvento}
+        brindesPorTipo={painelDados.brindesPorTipo}
+        onExportarCSV={exportarCSV}
+        onZerarRankingDia={zerarRankingDia}
+        onZerarTudo={zerarTudo}
       />
     </Canvas1080>
   );
