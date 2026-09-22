@@ -125,9 +125,6 @@ export function PainelOperador({
         <button className="mini mini--destaque" type="button" onClick={onFechar}>
           Fechar
         </button>
-        <p style={{ fontFamily: "var(--dado)", fontSize: 12, color: "var(--areia-dim)", lineHeight: 1.5 }}>
-          Para abrir este painel: mantenha o dedo 2 segundos sobre o nome no topo da tela.
-        </p>
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { TelaFundo } from "@/components/TelaFundo";
-import { IconeCoroa } from "@/components/IconeCoroa";
+import { BotaoCta } from "@/components/BotaoCta";
 import { Tela } from "@/components/Tela";
 
 function IconeSelo() {
@@ -94,17 +94,14 @@ export function Resultado({
         <p className="premio premio--vazio">Poxa, não foi dessa vez!</p>
       )}
       <div className="acoes">
-        <button className="botao-cta" type="button" onClick={onJogarDeNovo}>
-          Jogar de novo
-        </button>
-        <button className="botao-cta botao-cta--fantasma" type="button" onClick={onProximoJogador}>
+        <BotaoCta onClick={onJogarDeNovo}>Jogar de novo</BotaoCta>
+        <BotaoCta variante="secundario" onClick={onProximoJogador}>
           Próximo jogador
-        </button>
+        </BotaoCta>
       </div>
-      <button className="botao-cta botao-cta--ranking" type="button" onClick={onAbrirRanking}>
-        <IconeCoroa />
+      <BotaoCta variante="ranking" onClick={onAbrirRanking}>
         Ranking
-      </button>
+      </BotaoCta>
       <p className="auto-volta">Voltando à tela inicial em {restante}s</p>
     </Tela>
   );

@@ -1,4 +1,9 @@
-// De https://reactbits.dev (registry @react-bits/ClickSpark-TS-CSS), sem alterações.
+// De https://reactbits.dev (registry @react-bits/ClickSpark-TS-CSS).
+// Alterado: o componente original assume que o buffer do canvas
+// (canvas.width/height) sempre bate 1:1 com o tamanho exibido em tela.
+// Aqui isso não vale porque o jogo roda dentro de .canvas1080, escalado
+// via CSS transform (ver Canvas1080.tsx) - ver comentários em
+// resizeCanvas e handleClick abaixo.
 import React, { useRef, useEffect, useCallback } from 'react';
 
 interface ClickSparkProps {
@@ -42,8 +47,17 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
 
     let resizeTimeout: ReturnType<typeof setTimeout>;
 
+    // offsetWidth/offsetHeight (tamanho de LAYOUT) em vez de
+    // getBoundingClientRect (tamanho VISUAL, já passado pelo
+    // transform:scale do ancestral .canvas1080 - ver Canvas1080.tsx).
+    // Como o canvas é descendente desse mesmo elemento escalado, usar
+    // getBoundingClientRect aqui faz a escala ser aplicada 2x: uma no
+    // valor lido, outra quando o próprio canvas (com esse valor como
+    // largura/altura) é pintado dentro do ancestral transformado. O
+    // canvas resultante cobria só uma fração da área real dos botões.
     const resizeCanvas = () => {
-      const { width, height } = parent.getBoundingClientRect();
+      const width = parent.offsetWidth;
+      const height = parent.offsetHeight;
       if (canvas.width !== width || canvas.height !== height) {
         canvas.width = width;
         canvas.height = height;
@@ -137,8 +151,15 @@ const ClickSpark: React.FC<ClickSparkProps> = ({
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    // canvas.width/height (buffer de desenho) pode não bater com
+    // rect.width/height (tamanho exibido em tela) - aqui, porque o jogo
+    // roda dentro de .canvas1080, escalado via transform (ver
+    // Canvas1080.tsx). Sem essa conversão, a faísca é desenhada nas
+    // coordenadas de tela só que interpretadas como coordenadas de
+    // buffer, saindo do lugar do clique sempre que os dois tamanhos
+    // divergem (também cobre devicePixelRatio em telas comuns).
+    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
 
     const now = performance.now();
     const newSparks: Spark[] = Array.from({ length: sparkCount }, (_, i) => ({

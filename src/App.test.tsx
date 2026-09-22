@@ -161,13 +161,8 @@ describe("App - som de toque nos botões grandes de navegação", () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    // abre o painel do operador: toque longo (2s) na marca/logo da abertura
-    const marca = document.querySelector("[data-marca]");
-    expect(marca).not.toBeNull();
-    fireEvent.pointerDown(marca as Element);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
+    // abre o painel do operador: botão de configurações da abertura
+    fireEvent.click(screen.getByRole("button", { name: /configurações/i }));
 
     fireEvent.click(screen.getByRole("button", { name: /som: ligado/i }));
     fireEvent.click(screen.getByRole("button", { name: /fechar/i }));
@@ -219,20 +214,14 @@ describe("App - painel do operador aberto por engano não trava o totem", () => 
 
   // O timeout de ociosidade do App retornava cedo sempre que `tela` era
   // "abertura" e `voltarAbertura` nunca mexia em `painelAberto` - então um
-  // painel aberto por engano sobre a tela de abertura (ex.: o double-touch
-  // fantasma coberto no teste de Abertura.test.tsx) nunca fechava sozinho.
-  // Um humano precisava notar e fechar manualmente; até lá, o totem ficava
-  // fora de serviço, bloqueado atrás do painel.
+  // painel aberto sobre a tela de abertura nunca fechava sozinho. Um humano
+  // precisava notar e fechar manualmente; até lá, o totem ficava fora de
+  // serviço, bloqueado atrás do painel.
   it("fecha sozinho o painel do operador aberto sobre a tela de abertura, sem toque do usuário", async () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    const marca = document.querySelector("[data-marca]");
-    expect(marca).not.toBeNull();
-    fireEvent.pointerDown(marca as Element);
-    act(() => {
-      vi.advanceTimersByTime(2000);
-    });
+    fireEvent.click(screen.getByRole("button", { name: /configurações/i }));
 
     expect(screen.getByText("Painel do operador")).toBeInTheDocument();
 
