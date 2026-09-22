@@ -75,56 +75,62 @@ export function PainelOperador({
       <div className="painel__caixa">
         <h2>Painel do operador</h2>
 
-        <h3 className="painel__secao">Sessão</h3>
-        <div className="painel__linha">
-          Partidas nesta sessão <b>{partidas}</b>
-        </div>
-        <div className="painel__linha">
-          Média de acerto <b>{mediaPercentual === null ? "-" : `${mediaPercentual}%`}</b>
-        </div>
-        <div className="painel__linha">
-          Perguntas no banco <b>{tamanhoBanco}</b>
-        </div>
-        <div className="painel__botoes">
-          <button className="mini" type="button" onClick={onAlternarSom}>
-            Som: {somLigado ? "ligado" : "desligado"}
-          </button>
-          <button className="mini" type="button" onClick={onTelaCheia}>
-            Tela cheia
-          </button>
-          <button className="mini" type="button" onClick={onZerar}>
-            Zerar contadores
-          </button>
+        <div className="painel__grupo">
+          <h3 className="painel__secao">Sessão</h3>
+          <div className="painel__linha">
+            Partidas nesta sessão <b>{partidas}</b>
+          </div>
+          <div className="painel__linha">
+            Média de acerto <b>{mediaPercentual === null ? "-" : `${mediaPercentual}%`}</b>
+          </div>
+          <div className="painel__linha">
+            Perguntas no banco <b>{tamanhoBanco}</b>
+          </div>
+          <div className="painel__botoes">
+            <button className="mini" type="button" onClick={onAlternarSom}>
+              Som: {somLigado ? "ligado" : "desligado"}
+            </button>
+            <button className="mini" type="button" onClick={onTelaCheia}>
+              Tela cheia
+            </button>
+            <button className="mini" type="button" onClick={onZerar}>
+              Zerar contadores
+            </button>
+          </div>
         </div>
 
-        <h3 className="painel__secao">Dados</h3>
-        <div className="painel__linha">
-          Partidas hoje <b>{partidasHoje}</b>
-        </div>
-        <div className="painel__linha">
-          Partidas no evento <b>{partidasEvento}</b>
-        </div>
-        <div className="painel__linha">
-          Brindes entregues <b>{brindes.length ? brindes.map(([tipo, qtd]) => `${tipo}: ${qtd}`).join(" · ") : "-"}</b>
-        </div>
-        <div className="painel__botoes">
-          <button className="mini" type="button" onClick={onExportarCSV}>
-            Exportar CSV
-          </button>
-          <button className="mini" type="button" onClick={onBaixarPDF}>
-            Baixar PDF
-          </button>
-          <button className="mini" type="button" onClick={() => clicarAcaoDestrutiva("dia", onZerarRankingDia)}>
-            {confirmando === "dia" ? "Confirmar zerar hoje?" : "Zerar ranking do dia"}
-          </button>
-          <button className="mini" type="button" onClick={() => clicarAcaoDestrutiva("tudo", onZerarTudo)}>
-            {confirmando === "tudo" ? "Confirmar zerar tudo?" : "Zerar tudo"}
-          </button>
+        <div className="painel__grupo">
+          <h3 className="painel__secao">Dados</h3>
+          <div className="painel__linha">
+            Partidas hoje <b>{partidasHoje}</b>
+          </div>
+          <div className="painel__linha">
+            Partidas no evento <b>{partidasEvento}</b>
+          </div>
+          <div className="painel__linha">
+            Brindes entregues <b>{brindes.length ? brindes.map(([tipo, qtd]) => `${tipo}: ${qtd}`).join(" · ") : "-"}</b>
+          </div>
+          <div className="painel__botoes">
+            <button className="mini" type="button" onClick={onExportarCSV}>
+              Exportar CSV
+            </button>
+            <button className="mini" type="button" onClick={onBaixarPDF}>
+              Baixar PDF
+            </button>
+            <button className="mini" type="button" onClick={() => clicarAcaoDestrutiva("dia", onZerarRankingDia)}>
+              {confirmando === "dia" ? "Confirmar zerar hoje?" : "Zerar ranking do dia"}
+            </button>
+            <button className="mini" type="button" onClick={() => clicarAcaoDestrutiva("tudo", onZerarTudo)}>
+              {confirmando === "tudo" ? "Confirmar zerar tudo?" : "Zerar tudo"}
+            </button>
+          </div>
         </div>
 
         <button className="mini mini--destaque" type="button" onClick={onFechar}>
           Fechar
         </button>
+
+        <p className="credito-north">Desenvolvido por North Software</p>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { Settings } from "lucide-react";
+import { Play, Settings } from "lucide-react";
 import logoAntonelly from "@/assets/antonelly-logo.svg";
 import { FUNDO_ABERTURA } from "@/config/backgrounds";
 import { TelaFundo } from "@/components/TelaFundo";
@@ -27,12 +27,15 @@ export function Abertura({ pronto, onComecar, onAbrirPainel, onAbrirRanking }: A
         <br />
         Quanto você sabe?
       </p>
-      <BotaoCta disabled={!pronto} onClick={onComecar}>
-        Vamos começar!
-      </BotaoCta>
-      <BotaoCta variante="ranking" onClick={onAbrirRanking}>
-        Ranking
-      </BotaoCta>
+      <div className="ctas-coluna">
+        <BotaoCta disabled={!pronto} onClick={onComecar}>
+          <Play size={34} fill="currentColor" />
+          Começar
+        </BotaoCta>
+        <BotaoCta variante="ranking" onClick={onAbrirRanking}>
+          Ranking
+        </BotaoCta>
+      </div>
       <button
         className="botao-config"
         type="button"
