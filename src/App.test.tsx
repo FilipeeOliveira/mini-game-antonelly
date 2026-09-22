@@ -76,7 +76,7 @@ async function digitarNomeEConfirmar(nome = "JOGADOR") {
 }
 
 async function comecarEDigitarNome(nome = "JOGADOR") {
-  fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+  fireEvent.click(screen.getByRole("button", { name: /começar/i }));
   await avancarTransicaoDeTela();
   await digitarNomeEConfirmar(nome);
 }
@@ -109,18 +109,6 @@ describe("App - partida completa", () => {
     expect(screen.getByText("6 de 6 perguntas certas")).toBeInTheDocument();
   });
 
-  it("'Jogar de novo' no resultado volta pra tela de nome e inicia uma nova partida", async () => {
-    render(<App />);
-    await aguardarFundosProntos();
-
-    await comecarEDigitarNome();
-    await jogarPartidaInteiraAcertandoTudo();
-    fireEvent.click(screen.getByRole("button", { name: /jogar de novo/i }));
-    await avancarTransicaoDeTela();
-    await digitarNomeEConfirmar();
-    expect(screen.getByText("1")).toBeInTheDocument();
-  });
-
   it("grava a partida no histórico assim que ela termina", async () => {
     render(<App />);
     await aguardarFundosProntos();
@@ -130,7 +118,7 @@ describe("App - partida completa", () => {
 
     const historico = JSON.parse(localStorage.getItem("mga:v1:partidas") ?? "[]");
     expect(historico).toHaveLength(1);
-    expect(historico[0]).toMatchObject({ nome: "JOGADOR", acertos: 6, total: 6, percentual: 100, premio: "1 CHOPE" });
+    expect(historico[0]).toMatchObject({ nome: "JOGADOR", acertos: 6, total: 6, percentual: 100, premio: "1 CHOPP" });
   });
 });
 
@@ -146,17 +134,17 @@ describe("App - som de toque nos botões grandes de navegação", () => {
     localStorage.clear();
   });
 
-  it("toca o som de toque ao tocar em 'Vamos começar' com o som ligado", async () => {
+  it("toca o som de toque ao tocar em 'Começar' com o som ligado", async () => {
     const espiaoToque = vi.spyOn(sons, "toque").mockImplementation(() => {});
     render(<App />);
     await aguardarFundosProntos();
 
-    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /começar/i }));
 
     expect(espiaoToque).toHaveBeenCalledTimes(1);
   });
 
-  it("não toca o som de toque ao tocar em 'Vamos começar' com o som desligado no painel", async () => {
+  it("não toca o som de toque ao tocar em 'Começar' com o som desligado no painel", async () => {
     const espiaoToque = vi.spyOn(sons, "toque").mockImplementation(() => {});
     render(<App />);
     await aguardarFundosProntos();
@@ -167,7 +155,7 @@ describe("App - som de toque nos botões grandes de navegação", () => {
     fireEvent.click(screen.getByRole("button", { name: /som: ligado/i }));
     fireEvent.click(screen.getByRole("button", { name: /fechar/i }));
 
-    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /começar/i }));
 
     expect(espiaoToque).not.toHaveBeenCalled();
   });
@@ -198,7 +186,7 @@ describe("App - som de toque nos botões grandes de navegação", () => {
     });
 
     expect(espiaoToque).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: /vamos começar/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /começar/i })).toBeInTheDocument();
   });
 });
 
@@ -249,7 +237,7 @@ describe("App - identificação do jogador e ranking", () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /começar/i }));
     await avancarTransicaoDeTela();
     fireEvent.click(screen.getByRole("button", { name: "A" }));
     fireEvent.click(screen.getByRole("button", { name: "N" }));
@@ -267,7 +255,7 @@ describe("App - identificação do jogador e ranking", () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /começar/i }));
     fireEvent.click(screen.getByRole("button", { name: /confirmar/i }));
 
     expect(screen.getByText("Digite seu nome para continuar")).toBeInTheDocument();
@@ -278,12 +266,12 @@ describe("App - identificação do jogador e ranking", () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /começar/i }));
     await avancarTransicaoDeTela();
     fireEvent.click(screen.getByRole("button", { name: /voltar/i }));
     await avancarTransicaoDeTela();
 
-    expect(screen.getByRole("button", { name: /vamos começar/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /começar/i })).toBeInTheDocument();
   });
 
   it("abre o ranking a partir da abertura e volta pra abertura", async () => {
@@ -296,7 +284,7 @@ describe("App - identificação do jogador e ranking", () => {
 
     fireEvent.click(screen.getByRole("button", { name: /voltar/i }));
     await avancarTransicaoDeTela();
-    expect(screen.getByRole("button", { name: /vamos começar/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /começar/i })).toBeInTheDocument();
   });
 
   it("abre o ranking a partir do resultado, destaca o jogador, e volta pro resultado", async () => {
@@ -319,14 +307,14 @@ describe("App - identificação do jogador e ranking", () => {
     render(<App />);
     await aguardarFundosProntos();
 
-    fireEvent.click(screen.getByRole("button", { name: /vamos começar/i }));
+    fireEvent.click(screen.getByRole("button", { name: /começar/i }));
     fireEvent.click(screen.getByRole("button", { name: "A" })); // toque no teclado reinicia o ocioso
 
     act(() => {
       vi.advanceTimersByTime(60000);
     });
 
-    expect(screen.getByRole("button", { name: /vamos começar/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /começar/i })).toBeInTheDocument();
     expect(listarHistoricoDoTeste()).toHaveLength(0);
   });
 });

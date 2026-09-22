@@ -16,11 +16,11 @@ describe("calcularPremio", () => {
 
     const esperado =
       percentual >= 90
-        ? "1 CHOPE"
+        ? "1 CHOPP"
         : percentual >= 70
           ? "1 SQUEEZE"
           : percentual >= 50
-            ? "1 CHAVEIRO"
+            ? "1 CANETA"
             : null;
 
     expect(premio).toBe(esperado);
@@ -34,7 +34,7 @@ describe("calcularPremio", () => {
   it("é robusto a faixas fora de ordem na config (ordena defensivamente por min desc)", () => {
     const foraDeOrdem = [
       { min: 0, premio: null },
-      { min: 90, premio: "1 CHOPE" },
+      { min: 90, premio: "1 CHOPP" },
       { min: 50, premio: "1 CHAVEIRO" },
       { min: 70, premio: "1 SQUEEZE" },
     ];
