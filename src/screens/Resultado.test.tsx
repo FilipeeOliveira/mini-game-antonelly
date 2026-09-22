@@ -72,7 +72,7 @@ describe("Resultado", () => {
   it("mostra a mensagem de consolação, sem caixa de prêmio, quando o jogador não ganhou", () => {
     const { container } = montar({ premio: null });
     expect(screen.getByText("Poxa, não foi dessa vez!")).toBeInTheDocument();
-    expect(container.querySelector(".premio__selo")).not.toBeInTheDocument();
+    expect(container.querySelector(".premio:not(.premio--vazio)")).not.toBeInTheDocument();
   });
 
   it("chama onAbrirRanking ao clicar em Ranking", () => {

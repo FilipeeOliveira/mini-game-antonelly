@@ -3,17 +3,6 @@ import { TelaFundo } from "@/components/TelaFundo";
 import { BotaoCta } from "@/components/BotaoCta";
 import { Tela } from "@/components/Tela";
 
-function IconeSelo() {
-  return (
-    <svg className="premio__selo" width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 2l2.6 5.27 5.82.85-4.21 4.1 1 5.8L12 15.27 6.79 18.02l1-5.8-4.21-4.1 5.82-.85L12 2z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
 type ResultadoProps = {
   fundo: string;
   percentual: number;
@@ -85,7 +74,6 @@ export function Resultado({
       </p>
       {premio ? (
         <div className="premio">
-          <IconeSelo />
           <span className="premio__nome">Parabéns, você ganhou: {premio.toLowerCase()}.</span>
         </div>
       ) : (

@@ -482,11 +482,19 @@ body {
   top: 104px;
   left: 109px;
   width: 862px;
-  max-height: 171px;
+  /* Reserva ~4 linhas (325px de topo das alternativas - 104px daqui, menos
+     uma folga) em vez das 3 linhas fixas de antes (max-height:171px com
+     line-height:57px em px absoluto) - com line-height fixo em px, encolher
+     o font-size (useAjustarFonte, abaixo) reduzia a largura do texto mas
+     nunca abria espaço pra uma linha extra, então perguntas longas eram
+     cortadas por este overflow:hidden mesmo com a fonte já no mínimo. Com
+     line-height relativo, o encolhimento da fonte reduz também a altura de
+     cada linha. */
+  max-height: 205px;
   overflow: hidden;
   color: #fff;
   font-size: 58px;
-  line-height: 57px;
+  line-height: 1.05;
   font-variation-settings: "wdth" 100, "wght" 800;
   text-align: left;
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
@@ -706,12 +714,6 @@ body {
   padding: 22px 32px;
   border-radius: 28px;
   background: var(--cta);
-  color: #fff;
-}
-
-.premio__selo {
-  flex: 0 0 auto;
-  margin-top: 4px;
   color: #fff;
 }
 
