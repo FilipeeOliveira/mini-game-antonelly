@@ -717,12 +717,6 @@ body {
   color: #fff;
 }
 
-.premio__selo {
-  flex: 0 0 auto;
-  margin-top: 4px;
-  color: #fff;
-}
-
 .premio__nome {
   flex: 1;
   min-width: 0;
