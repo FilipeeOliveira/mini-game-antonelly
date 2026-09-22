@@ -295,7 +295,23 @@ body {
   align-self: flex-start;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 14px;
+  /* Largura mínima compartilhada (não fixa - cada botão ainda cresce com o
+     próprio texto): sem isto "Ranking" (texto curto) ficava visivelmente
+     menor que "Vamos começar!"/"Jogar de novo", como se fosse outro
+     componente. height é fixa (não min-height) por um motivo diferente:
+     .botao-cta--fantasma tem border de 2px que .botao-cta não tem, e
+     border sempre soma à altura automática de um elemento independente
+     de box-sizing (que só reinterpreta um height EXPLÍCITO, não o auto)
+     - min-height não teria efeito aqui porque 116px (com borda) já é
+     maior que o próprio mínimo de 112px. Seguro fixar: o texto destes
+     botões nunca quebra linha. */
+  /* 420px cobre o maior CTA das duas telas ("Vamos começar!", 415px) -
+     Ranking nunca fica visivelmente menor que o botão principal ao lado,
+     nas duas telas, sem precisar de largura igual/fixa nem medir via JS. */
+  min-width: 420px;
+  height: 112px;
   border: none;
   border-radius: 28px;
   cursor: pointer;
@@ -635,7 +651,12 @@ body {
   font-variation-settings: "wdth" 112, "wght" 800;
   max-width: 16ch;
   color: #fff;
-  text-align: justify;
+  /* Era text-align:justify: com poucas "palavras" por linha (a mensagem
+     tem hífen solto e frases curtas), justify esticava espaços entre elas
+     pra encostar nas duas bordas - lia como erro de layout, não como
+     quebra intencional. left deixa a quebra natural do max-width em pé,
+     sem esticar nada. */
+  text-align: left;
   text-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
 }
 

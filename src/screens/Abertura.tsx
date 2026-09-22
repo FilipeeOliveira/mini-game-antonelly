@@ -2,7 +2,7 @@ import { Settings } from "lucide-react";
 import logoAntonelly from "@/assets/antonelly-logo.svg";
 import { FUNDO_ABERTURA } from "@/config/backgrounds";
 import { TelaFundo } from "@/components/TelaFundo";
-import { IconeCoroa } from "@/components/IconeCoroa";
+import { BotaoCta } from "@/components/BotaoCta";
 import { TituloAbertura } from "@/components/TituloAbertura";
 import { Tela } from "@/components/Tela";
 
@@ -27,18 +27,12 @@ export function Abertura({ pronto, onComecar, onAbrirPainel, onAbrirRanking }: A
         <br />
         Quanto você sabe?
       </p>
-      <button
-        className="botao-cta"
-        type="button"
-        disabled={!pronto}
-        onClick={onComecar}
-      >
+      <BotaoCta disabled={!pronto} onClick={onComecar}>
         Vamos começar!
-      </button>
-      <button className="botao-cta botao-cta--ranking" type="button" onClick={onAbrirRanking}>
-        <IconeCoroa />
+      </BotaoCta>
+      <BotaoCta variante="ranking" onClick={onAbrirRanking}>
         Ranking
-      </button>
+      </BotaoCta>
       <button
         className="botao-config"
         type="button"
