@@ -86,7 +86,7 @@ export function Resultado({
       {premio ? (
         <div className="premio">
           <IconeSelo />
-          <span className="premio__nome">Parabéns! Você ganhou {premio.toLowerCase()}.</span>
+          <span className="premio__nome">Parabéns, você ganhou: {premio.toLowerCase()}.</span>
         </div>
       ) : (
         <p className="premio premio--vazio">Poxa, não foi dessa vez!</p>

@@ -118,7 +118,7 @@ describe("App - partida completa", () => {
 
     const historico = JSON.parse(localStorage.getItem("mga:v1:partidas") ?? "[]");
     expect(historico).toHaveLength(1);
-    expect(historico[0]).toMatchObject({ nome: "JOGADOR", acertos: 6, total: 6, percentual: 100, premio: "1 CHOPE" });
+    expect(historico[0]).toMatchObject({ nome: "JOGADOR", acertos: 6, total: 6, percentual: 100, premio: "1 CHOPP" });
   });
 });
 

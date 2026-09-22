@@ -65,8 +65,8 @@ describe("Resultado", () => {
   });
 
   it("mostra o prêmio quando o jogador ganhou", () => {
-    montar({ premio: "1 CHOPE" });
-    expect(screen.getByText("Parabéns! Você ganhou 1 chope.")).toBeInTheDocument();
+    montar({ premio: "1 CHOPP" });
+    expect(screen.getByText("Parabéns, você ganhou: 1 chopp.")).toBeInTheDocument();
   });
 
   it("mostra a mensagem de consolação, sem caixa de prêmio, quando o jogador não ganhou", () => {
