@@ -20,7 +20,7 @@ describe("calcularPremio", () => {
         : percentual >= 70
           ? "1 SQUEEZE"
           : percentual >= 50
-            ? "1 CANETA"
+            ? "1 CHAVEIRO"
             : null;
 
     expect(premio).toBe(esperado);

@@ -17,6 +17,7 @@ describe("Resultado", () => {
         mensagem="Quase lá em cima: só faltou um palmo de água"
         premio="1 SQUEEZE"
         segundosAutoVolta={25}
+        onJogarDeNovo={() => {}}
         onProximoJogador={() => {}}
         onAbrirRanking={() => {}}
         onAutoVolta={() => {}}
@@ -32,10 +33,17 @@ describe("Resultado", () => {
     expect(screen.getByText("5 de 6 perguntas certas")).toBeInTheDocument();
   });
 
-  it("chama onProximoJogador ao clicar em 'Voltar ao início'", () => {
+  it("chama onJogarDeNovo ao clicar em 'Jogar de novo'", () => {
+    const onJogarDeNovo = vi.fn();
+    montar({ onJogarDeNovo });
+    fireEvent.click(screen.getByRole("button", { name: /jogar de novo/i }));
+    expect(onJogarDeNovo).toHaveBeenCalledTimes(1);
+  });
+
+  it("chama onProximoJogador ao clicar em 'Próximo jogador'", () => {
     const onProximoJogador = vi.fn();
     montar({ onProximoJogador });
-    fireEvent.click(screen.getByRole("button", { name: /voltar ao início/i }));
+    fireEvent.click(screen.getByRole("button", { name: /próximo jogador/i }));
     expect(onProximoJogador).toHaveBeenCalledTimes(1);
   });
 
@@ -66,7 +74,7 @@ describe("Resultado", () => {
 
   it("mostra o prêmio quando o jogador ganhou", () => {
     montar({ premio: "1 CHOPE" });
-    expect(screen.getByText("Parabéns! Você ganhou 1 chope.")).toBeInTheDocument();
+    expect(screen.getByText("1 CHOPE")).toBeInTheDocument();
   });
 
   it("mostra a mensagem de consolação, sem caixa de prêmio, quando o jogador não ganhou", () => {

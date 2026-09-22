@@ -7,6 +7,6 @@ export type FaixaPremio = { min: number; premio: string | null };
 export const FAIXAS_PREMIO: FaixaPremio[] = [
   { min: 90, premio: "1 CHOPE" },
   { min: 70, premio: "1 SQUEEZE" },
-  { min: 50, premio: "1 CANETA" },
+  { min: 50, premio: "1 CHAVEIRO" },
   { min: 0, premio: null },
 ];

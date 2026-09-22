@@ -1,10 +1,11 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { Crown } from "lucide-react";
+import { IconeCoroa } from "@/components/IconeCoroa";
 
-type Variante = "primario" | "ranking";
+type Variante = "primario" | "secundario" | "ranking";
 
 const CLASSE_POR_VARIANTE: Record<Variante, string> = {
   primario: "botao-cta",
+  secundario: "botao-cta botao-cta--fantasma",
   ranking: "botao-cta botao-cta--ranking",
 };
 
@@ -20,7 +21,7 @@ type BotaoCtaProps = {
 export function BotaoCta({ variante = "primario", children, ...props }: BotaoCtaProps) {
   return (
     <button type="button" className={CLASSE_POR_VARIANTE[variante]} {...props}>
-      {variante === "ranking" && <Crown size={34} fill="currentColor" />}
+      {variante === "ranking" && <IconeCoroa />}
       {children}
     </button>
   );

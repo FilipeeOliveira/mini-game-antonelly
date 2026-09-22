@@ -207,6 +207,11 @@ export function App() {
     voltarAbertura();
   }
 
+  function jogarDeNovoComSom() {
+    tocar("toque");
+    setTela("nome");
+  }
+
   function proximoJogadorComSom() {
     tocar("toque");
     voltarAbertura();
@@ -365,6 +370,7 @@ export function App() {
             mensagem={mensagemResultado(resultado.percentual)}
             premio={premioAtual}
             segundosAutoVolta={CONFIG.segundosOcioso}
+            onJogarDeNovo={jogarDeNovoComSom}
             onProximoJogador={proximoJogadorComSom}
             onAbrirRanking={() => abrirRankingComSom("resultado")}
             onAutoVolta={voltarAbertura}

@@ -22,11 +22,12 @@ type ResultadoProps = {
   mensagem: string;
   premio: string | null;
   segundosAutoVolta: number;
+  onJogarDeNovo: () => void;
   onProximoJogador: () => void;
   onAbrirRanking: () => void;
   // Caminho silencioso do retorno automático (25s sem toque). Deliberadamente
   // separado de onProximoJogador: esse último é acionado só pelo clique no
-  // botão "Voltar ao início" e, em App.tsx, está encadeado ao som de toque -
+  // botão "Próximo jogador" e, em App.tsx, está encadeado ao som de toque -
   // fiel ao original, onde apenas o listener de clique de btn-sair chama
   // somToque(), e o auto-retorno (irParaAbertura() puro) nunca toca som. Se
   // o timeout abaixo chamasse onProximoJogador, o totem beeparia sozinho a
@@ -42,6 +43,7 @@ export function Resultado({
   mensagem,
   premio,
   segundosAutoVolta,
+  onJogarDeNovo,
   onProximoJogador,
   onAbrirRanking,
   onAutoVolta,
@@ -86,17 +88,20 @@ export function Resultado({
       {premio ? (
         <div className="premio">
           <IconeSelo />
-          <span className="premio__nome">Parabéns! Você ganhou {premio.toLowerCase()}.</span>
+          <span className="premio__nome">{premio}</span>
         </div>
       ) : (
         <p className="premio premio--vazio">Poxa, não foi dessa vez!</p>
       )}
-      <div className="ctas-coluna">
-        <BotaoCta onClick={onProximoJogador}>Voltar ao início</BotaoCta>
-        <BotaoCta variante="ranking" onClick={onAbrirRanking}>
-          Ranking
+      <div className="acoes">
+        <BotaoCta onClick={onJogarDeNovo}>Jogar de novo</BotaoCta>
+        <BotaoCta variante="secundario" onClick={onProximoJogador}>
+          Próximo jogador
         </BotaoCta>
       </div>
+      <BotaoCta variante="ranking" onClick={onAbrirRanking}>
+        Ranking
+      </BotaoCta>
       <p className="auto-volta">Voltando à tela inicial em {restante}s</p>
     </Tela>
   );
