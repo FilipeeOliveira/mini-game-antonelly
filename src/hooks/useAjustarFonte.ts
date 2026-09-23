@@ -54,9 +54,27 @@ export function useAjustarFonte<T extends HTMLElement>(
 
     ajustar();
 
-    if (typeof document !== "undefined" && document.fonts) {
-      document.fonts.ready.then(ajustar);
-    }
+    const fontes = typeof document !== "undefined" ? document.fonts : undefined;
+    if (!fontes) return;
+    let ativo = true;
+    const reajustar = () => {
+      if (ativo) ajustar();
+    };
+    // Pede a fonte exata deste elemento (família/peso/tamanho computados) com
+    // os glifos do próprio texto, em vez de só `fonts.ready`: o ready resolve
+    // na hora se nada estiver carregando naquele instante, e aí a medição
+    // feita com o fallback ficava valendo.
+    const estilo = getComputedStyle(el);
+    fontes
+      .load(`${estilo.fontWeight} ${estilo.fontSize} ${estilo.fontFamily}`, el.textContent ?? "")
+      .then(reajustar, () => {});
+    // E refaz se qualquer fonte terminar de carregar com a tela já montada
+    // (swap tardio) - o tamanho não pode ficar congelado no do fallback.
+    fontes.addEventListener("loadingdone", reajustar);
+    return () => {
+      ativo = false;
+      fontes.removeEventListener("loadingdone", reajustar);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, deps);
 

@@ -36,6 +36,20 @@ function TextoAlternativa({ texto, comIcone }: { texto: string; comIcone: boolea
   );
 }
 
+// Mesmo motivo do TextoAlternativa: o hook precisa viver DENTRO do bloco
+// com key={indice}. Quando ficava em Jogo, a troca de pergunta rodava o
+// ajuste com o ref ainda apontando pro <h2> que estava saindo
+// (AnimatePresence mode="wait" mantém o antigo na tela durante o exit) - a
+// pergunta nova herdava o tamanho que servia pra anterior e era cortada.
+function TextoPergunta({ texto }: { texto: string }) {
+  const { ref, fonte } = useAjustarFonte<HTMLHeadingElement>(58, 32, [texto]);
+  return (
+    <h2 ref={ref} className="pergunta" style={{ fontSize: fonte }}>
+      {texto}
+    </h2>
+  );
+}
+
 type JogoProps = {
   itens: ItemPartida[];
   fundos: string[];
@@ -89,7 +103,6 @@ export function Jogo({
 
   const item = itens[indice];
   const idxCerta = item.alternativas.findIndex((a) => a.certa);
-  const { ref: perguntaRef, fonte: perguntaFonte } = useAjustarFonte<HTMLHeadingElement>(58, 32, [item.pergunta]);
 
   useEffect(() => {
     bloqueadoRef.current = false;
@@ -204,9 +217,7 @@ export function Jogo({
           exit={{ opacity: 0, y: -16 }}
           transition={{ duration: 0.22, ease: "easeInOut" }}
         >
-          <h2 ref={perguntaRef} className="pergunta" style={{ fontSize: perguntaFonte }}>
-            {item.pergunta}
-          </h2>
+          <TextoPergunta texto={item.pergunta} />
 
           <ClickSpark sparkColor="#fff" sparkCount={10} sparkSize={12} sparkRadius={26} duration={450}>
             <div className="alternativas">
