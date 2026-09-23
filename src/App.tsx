@@ -25,6 +25,7 @@ import { NomeJogador } from "@/screens/NomeJogador";
 import { Jogo } from "@/screens/Jogo";
 import { Resultado } from "@/screens/Resultado";
 import { Ranking } from "@/screens/Ranking";
+import { TesteLayout } from "@/screens/TesteLayout";
 
 const CONFIG = {
   perguntasPorPartida: 6,
@@ -39,7 +40,7 @@ const CONFIG = {
   embaralharAlternativas: true,
 };
 
-type Tela = "abertura" | "nome" | "jogo" | "resultado" | "ranking";
+type Tela = "abertura" | "nome" | "jogo" | "resultado" | "ranking" | "teste";
 type OrigemRanking = "abertura" | "resultado";
 
 export function App() {
@@ -300,7 +301,7 @@ export function App() {
   useEffect(() => {
     function reiniciarOcioso() {
       if (ociosoRef.current) clearTimeout(ociosoRef.current);
-      if (tela === "abertura" && !painelAberto) return;
+      if ((tela === "abertura" && !painelAberto) || tela === "teste") return;
       if (tela === "abertura") {
         // painel aberto sobre a abertura: nada de navegação de tela a
         // fazer, só fechar o painel se ficar parado tempo demais.
@@ -335,6 +336,7 @@ export function App() {
             onComecar={comecarComSom}
             onAbrirPainel={() => setPainelAberto(true)}
             onAbrirRanking={() => abrirRankingComSom("abertura")}
+            onAbrirTesteLayout={import.meta.env.DEV ? () => setTela("teste") : undefined}
           />
         )}
 
@@ -379,6 +381,9 @@ export function App() {
             onVoltar={voltarDoRankingComSom}
           />
         )}
+
+        {/* Ferramenta de dev: só lê o banco, não toca em partida/ranking. */}
+        {import.meta.env.DEV && tela === "teste" && <TesteLayout key="teste" onSair={voltarAbertura} />}
       </AnimatePresence>
 
       <PainelOperador
