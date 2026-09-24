@@ -80,12 +80,12 @@ export const BANCO_PERGUNTAS: Pergunta[] = [
     correta: 1,
   },
   {
-    pergunta: "Qual destas atividades está diretamente relacionada à Engenharia Naval?",
+    pergunta: "Qual é a principal função de um muro de contenção?",
     alternativas: [
-      "Projeto e construção de portos",
-      "Projeto e manutenção de embarcações",
-      "Controle do tráfego marítimo",
-      "Gestão do transporte rodoviário",
+      "Melhorar a iluminação natural de uma construção",
+      "Conter o solo e resistir aos esforços provocados por ele",
+      "Reduzir o consumo de concreto da fundação",
+      "Substituir o sistema de drenagem do terreno",
     ],
     correta: 1,
   },
@@ -217,7 +217,7 @@ export const BANCO_PERGUNTAS: Pergunta[] = [
   },
   {
     pergunta: "Qual dos portos abaixo foi construído pela Antonelly?",
-    alternativas: ["Porto de Alvarães", "Porto de Tefé", "Porto de Coari", "Porto de Santos (SP)"],
+    alternativas: ["Porto de Alvarães", "Porto de Parintins", "Porto de Coari", "Porto de Santos (SP)"],
     correta: 0,
   },
   {
