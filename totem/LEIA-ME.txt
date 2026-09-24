@@ -1,0 +1,9 @@
+DESAFIO DO RIO - como rodar
+
+1. Copie esta pasta inteira para o computador (ex.: C:\Totem). Nao separe os arquivos.
+2. De duplo clique em "iniciar-totem.bat". O jogo abre no Edge em tela cheia.
+3. Para sair da tela cheia: Alt+F4.
+
+Nao precisa de internet nem de instalar nada (so o Edge, que ja vem no Windows).
+Deixe a escala de tela do Windows em 100%.
+O ranking fica salvo no Edge para esta pasta: se mover a pasta de lugar, o ranking zera.

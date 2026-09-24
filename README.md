@@ -36,6 +36,19 @@ seguinte e avisa no terminal).
 
 ## Levando para o totem
 
+### Jeito simples (sem servidor, sem internet)
+
+1. `npm run build:totem`
+2. Copie a pasta **`Mini-game-antonelly/`** inteira (ou o `.zip` dela) para o totem
+3. Dê duplo clique em **`iniciar-totem.bat`**: abre o jogo no Edge em tela
+   cheia (quiosque). Para sair do quiosque: `Alt+F4`.
+
+O `index.html` dessa pasta já traz JS, CSS e fontes embutidos; os fundos ficam
+em `assets/`. Por isso ele abre direto do arquivo, sem precisar do Node nem de
+servidor no totem.
+
+### Jeito com servidor local
+
 1. Numa máquina de desenvolvimento: `npm run build`
 2. Copie a pasta **`dist/`** inteira para o totem (pendrive, rede, o que for)
 3. No totem, sirva essa pasta por um **servidor estático local** e abra o
