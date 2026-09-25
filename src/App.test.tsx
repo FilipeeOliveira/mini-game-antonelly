@@ -63,15 +63,21 @@ async function aguardarFundosProntos() {
   });
 }
 
-// "Vamos começar" leva pra tela de nome do jogador antes da primeira
-// pergunta, e o jogo não inicia sem um nome digitado - estes helpers digitam
-// um nome padrão e confirmam, pros testes que não são sobre a identificação
-// do jogador em si.
+// "Vamos começar" leva pra tela de nome do jogador e depois pra apresentação
+// antes da primeira pergunta, e o jogo não inicia sem um nome digitado -
+// estes helpers digitam um nome padrão, confirmam e passam pela
+// apresentação, pros testes que não são sobre essas telas em si.
 async function digitarNomeEConfirmar(nome = "JOGADOR") {
   for (const letra of nome) {
     fireEvent.click(screen.getByRole("button", { name: letra === " " ? "ESPAÇO" : letra }));
   }
   fireEvent.click(screen.getByRole("button", { name: /confirmar/i }));
+  await avancarTransicaoDeTela();
+  await continuarApresentacao();
+}
+
+async function continuarApresentacao() {
+  fireEvent.click(screen.getByRole("button", { name: /continuar/i }));
   await avancarTransicaoDeTela();
 }
 
@@ -244,6 +250,7 @@ describe("App - identificação do jogador e ranking", () => {
     fireEvent.click(screen.getByRole("button", { name: "A" }));
     fireEvent.click(screen.getByRole("button", { name: /confirmar/i }));
     await avancarTransicaoDeTela();
+    await continuarApresentacao();
 
     await jogarPartidaInteiraAcertandoTudo();
 
@@ -315,6 +322,57 @@ describe("App - identificação do jogador e ranking", () => {
     });
 
     expect(screen.getByRole("button", { name: /começar/i })).toBeInTheDocument();
+    expect(listarHistoricoDoTeste()).toHaveLength(0);
+  });
+});
+
+describe("App - apresentação entre o nome e as perguntas", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.spyOn(Math, "random").mockReturnValue(0.999999);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+    localStorage.clear();
+  });
+
+  async function irAteApresentacao() {
+    render(<App />);
+    await aguardarFundosProntos();
+    fireEvent.click(screen.getByRole("button", { name: /começar/i }));
+    await avancarTransicaoDeTela();
+    fireEvent.click(screen.getByRole("button", { name: "A" }));
+    fireEvent.click(screen.getByRole("button", { name: /confirmar/i }));
+    await avancarTransicaoDeTela();
+  }
+
+  it("confirmar o nome mostra a apresentação, e as perguntas só começam no Continuar", async () => {
+    await irAteApresentacao();
+    expect(screen.getByText("Olá, somos a Antonelly!")).toBeInTheDocument();
+
+    // Parado bem mais que os 25s de uma pergunta: se o cronômetro já
+    // estivesse rodando, a partida teria andado sozinha.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30000);
+    });
+    expect(document.querySelector(".pergunta")).toBeNull();
+
+    await continuarApresentacao();
+    expect(document.querySelector(".pergunta")?.textContent).toBe(BANCO_PERGUNTAS[0].pergunta);
+  });
+
+  it("idle na apresentação volta pra abertura sem iniciar partida", async () => {
+    await irAteApresentacao();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60000);
+    });
+    await avancarTransicaoDeTela();
+
+    expect(screen.getByRole("button", { name: /começar/i })).toBeInTheDocument();
+    expect(screen.queryByText("Olá, somos a Antonelly!")).not.toBeInTheDocument();
     expect(listarHistoricoDoTeste()).toHaveLength(0);
   });
 });

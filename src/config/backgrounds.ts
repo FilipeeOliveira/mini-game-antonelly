@@ -11,7 +11,12 @@ import operacaoPortuaria from "../../docs/imagens_painel/operacao_portuaria.svg"
 import orlaRibeirinha from "../../docs/imagens_painel/orla_ribeirinha.svg";
 import vistaAerea from "../../docs/imagens_painel/vista_aerea.svg";
 
+// Fundo fixo da tela "Olá, somos a Antonelly!" (equipe comemorando no convés).
+import equipeNoConves from "../../docs/imagens_painel/equipe_no_conves.svg";
+
 export const FUNDO_ABERTURA = fundoAbertura;
+
+export const FUNDO_APRESENTACAO = equipeNoConves;
 
 // Fundo fixo da tela de resultado - sempre o mesmo, por pedido do cliente.
 export const FUNDO_RESULTADO = balsaPorDoSol;
@@ -26,7 +31,7 @@ export const FUNDOS_PERGUNTA = [
   vistaAerea,
 ];
 
-export const TODOS_FUNDOS = [FUNDO_ABERTURA, ...FUNDOS_PERGUNTA];
+export const TODOS_FUNDOS = [FUNDO_ABERTURA, FUNDO_APRESENTACAO, ...FUNDOS_PERGUNTA];
 
 // Cor sólida de fallback se um SVG falhar ao carregar.
 export const FUNDO_COR_FALLBACK = "#1D3F61";

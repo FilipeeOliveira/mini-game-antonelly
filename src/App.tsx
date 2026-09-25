@@ -22,6 +22,7 @@ import { PainelOperador } from "@/components/PainelOperador";
 import { Canvas1080 } from "@/components/Canvas1080";
 import { Abertura } from "@/screens/Abertura";
 import { NomeJogador } from "@/screens/NomeJogador";
+import { Apresentacao } from "@/screens/Apresentacao";
 import { Jogo } from "@/screens/Jogo";
 import { Resultado } from "@/screens/Resultado";
 import { Ranking } from "@/screens/Ranking";
@@ -40,7 +41,7 @@ const CONFIG = {
   embaralharAlternativas: true,
 };
 
-type Tela = "abertura" | "nome" | "jogo" | "resultado" | "ranking" | "teste";
+type Tela = "abertura" | "nome" | "apresentacao" | "jogo" | "resultado" | "ranking" | "teste";
 type OrigemRanking = "abertura" | "resultado";
 
 export function App() {
@@ -200,6 +201,13 @@ export function App() {
   function confirmarNomeComSom(nome: string) {
     tocar("toque");
     setNomeJogador(nome);
+    setTela("apresentacao");
+  }
+
+  // Só aqui a partida começa (sorteio + cronômetro) - não ao entrar na
+  // apresentação.
+  function continuarComSom() {
+    tocar("toque");
     iniciarPartida();
   }
 
@@ -343,6 +351,8 @@ export function App() {
         {tela === "nome" && (
           <NomeJogador key="nome" onConfirmar={confirmarNomeComSom} onVoltar={voltarDoNomeComSom} />
         )}
+
+        {tela === "apresentacao" && <Apresentacao key="apresentacao" onContinuar={continuarComSom} />}
 
         {tela === "jogo" && itens.length > 0 && (
           <Jogo

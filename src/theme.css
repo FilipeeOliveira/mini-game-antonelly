@@ -637,6 +637,42 @@ body {
 }
 
 /* ---------------------------------------------------------------------- */
+/* Apresentação ("Olá, somos a Antonelly!") - entre o nome e as perguntas. */
+/* Tudo no terço de cima (céu da foto), pra não cobrir a equipe no convés. */
+/* ---------------------------------------------------------------------- */
+.apresentacao {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  padding: 150px 108px 0;
+}
+
+.apresentacao__titulo {
+  z-index: 1;
+  font-size: 88px;
+  line-height: 1;
+  font-variation-settings: "wdth" 112, "wght" 900;
+  letter-spacing: -0.02em;
+  color: #fff;
+  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.45);
+}
+
+/* Card de vidro escuro (mesma receita do .auto-volta): o texto é longo e
+   passa da faixa do gradiente do overlay, então precisa de fundo próprio. */
+.apresentacao__texto {
+  z-index: 1;
+  padding: 40px 44px;
+  border-radius: 28px;
+  background: rgba(8, 21, 30, 0.62);
+  backdrop-filter: blur(6px);
+  font-family: var(--inter);
+  font-size: 38px;
+  line-height: 1.4;
+  font-weight: 500;
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------------- */
 /* Tela de resultado - mesma linguagem visual (fundo + overlay + CTA       */
 /* verde), sem mockup exato: layout extrapolado a partir da abertura.      */
 /* ---------------------------------------------------------------------- */
