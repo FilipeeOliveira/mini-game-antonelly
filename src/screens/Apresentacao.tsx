@@ -16,7 +16,7 @@ export function Apresentacao({ onContinuar }: ApresentacaoProps) {
       <h1 className="apresentacao__titulo">Olá, somos a Antonelly!</h1>
       <p className="apresentacao__texto">
         Há mais de 20 anos, atuamos na construção civil e naval e na conservação de patrimônios públicos,
-        contribuindo para o desenvolvimento da Região Norte. Com uma equipe qualificada, entrega soluções com qualidade,
+        contribuindo para o desenvolvimento da Região Norte. Com uma equipe qualificada, entregamos soluções com qualidade,
         segurança e durabilidade, valorizando as comunidades locais em mais de 50 municípios e o respeito ao meio
         ambiente.
       </p>
